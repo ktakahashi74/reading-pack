@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "bytes": 1434,
+      "path": "SKILL.md",
+      "sha256": "83bf3603520c26cb6f8f75e9ceb8102eb373bf43abc65befbcb06f2edce7ede1"
+    },
+    {
+      "bytes": 7165,
+      "path": "references/clockwork-garden-reading-pack.en.md",
+      "sha256": "bb16ed32f72c218f60e01f370bffe765c33adc2f37aa190fabe064618076a979"
+    },
+    {
+      "bytes": 7840,
+      "path": "references/clockwork-garden-reading-pack.ja.md",
+      "sha256": "1b614fa46d5598ee3a0c5de30d1c387949cdf61341ec24c1c839c4285f5727da"
+    }
+  ],
+  "format_version": "1",
+  "kind": "reading-pack-agent-skill",
+  "reading_pack": {
+    "languages": [
+      "ja",
+      "en"
+    ],
+    "license": "CC0 1.0 Universal",
+    "primary_language": "ja",
+    "status": "canonical",
+    "version": "1.0.0"
+  },
+  "skill": {
+    "name": "clockwork-garden"
+  }
+}

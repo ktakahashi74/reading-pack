@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "language": "en",
+  "source": {
+    "format": "markdown",
+    "name": "book.en.md",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "book": {
+    "title": "Clockwork Garden",
+    "author": "Mira Aoki"
+  },
+  "chapters": [
+    {
+      "id": "CH-01",
+      "kind": "chapter",
+      "title": "Sowing the Seed",
+      "pages": "1-8",
+      "sections": ["The Blueprint", "First Germination"],
+      "summary": "Introduces the design of a garden that moves with the moon and its first operation.",
+      "terms": ["lunar mechanism", "moving bed"],
+      "status": "approved",
+      "source_id": "CH-01",
+      "source_hash": "bbbe7326d9cd9ddaffbf7173732a7797e76917c535f9d1d0a79f67fbd1876120",
+      "translation_status": "approved"
+    },
+    {
+      "id": "CH-02",
+      "kind": "chapter",
+      "title": "The Garden Chooses",
+      "pages": "9-16",
+      "sections": ["Rules of the Seasons"],
+      "summary": "Examines how an autonomous garden affects collective decisions in the town.",
+      "terms": ["seasonal rule"],
+      "status": "approved",
+      "source_id": "CH-02",
+      "source_hash": "72028744e5c0d229050b9b8d65c1de38947c877d6ecb80300b41992cb138baef",
+      "translation_status": "approved"
+    }
+  ],
+  "certainty": [
+    {
+      "id": "CERT-I",
+      "label": "Explicit story fact",
+      "definition": "A fact directly stated in the story and verifiable without added interpretation.",
+      "status": "approved",
+      "source_id": "CERT-I",
+      "source_hash": "3b29593b3804a38da1dffb0cc03c545da3d25ad04bee89bcc3d0dad6f7233ce0",
+      "translation_status": "approved"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CL-01",
+      "layer": "descriptive",
+      "kind": "story fact",
+      "statement": "The garden beds move in response to lunar phases.",
+      "chapter_ids": ["CH-01"],
+      "certainty_id": "CERT-I",
+      "falsifiability": "The story's blueprint shows a driving rule unrelated to lunar phases.",
+      "status": "approved",
+      "source_id": "CL-01",
+      "source_hash": "357a2033119cfdcbb934305ebafd35cfb2efbc53a0ac59875095f789c9436369",
+      "translation_status": "approved"
+    }
+  ],
+  "misreadings": [
+    {
+      "id": "MIS-01",
+      "misreading": "The garden is a rebel that refuses human commands.",
+      "response": "The garden executes its established seasonal rules, and the result changes the town's choices.",
+      "chapter_ids": ["CH-02"],
+      "status": "approved",
+      "source_id": "MIS-01",
+      "source_hash": "bb4ddf3d612cf43cc348f41c315fbd20ee315474fb5c538474bf12779a93b7ab",
+      "translation_status": "approved"
+    }
+  ],
+  "names": [
+    {
+      "id": "NAME-01",
+      "name": "Rio",
+      "chapter_id": "CH-01",
+      "book_context": "Rio is introduced as the designer of the lunar mechanism.",
+      "status": "approved",
+      "source_id": "NAME-01",
+      "source_hash": "7d88a9ec6631c646f91f4c6a1c9ba774fa0ac409f0937174a855f67a6be9a0ec",
+      "translation_status": "approved"
+    }
+  ],
+  "glossary": [
+    {
+      "id": "TERM-01",
+      "term": "lunar mechanism",
+      "chapter_id": "CH-01",
+      "book_meaning": "In the book, this is the mechanism that moves the garden with the lunar phase.",
+      "status": "approved",
+      "source_id": "TERM-01",
+      "source_hash": "17471fd4b6cf3067ff09f82f08267a1390b3380428c263eb4530080ffdb4507d",
+      "translation_status": "approved"
+    }
+  ],
+  "references": [
+    {
+      "id": "REF-01",
+      "url": "https://example.com/clockwork-garden/",
+      "label": "Official page",
+      "status": "approved",
+      "source_id": "REF-01",
+      "source_hash": "c51aa3b843f3a860073a05b53afaab98db8030470c8a93cc040d8e8479d195c4",
+      "translation_status": "approved"
+    }
+  ]
+}

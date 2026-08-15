@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/author-input-module.schema.json",
+  "title": "Reading Pack Author Input Package JSON module",
+  "type": "object",
+  "required": ["schema_version", "module", "records"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "module": {"enum": ["chapters", "summaries", "chapter_terms", "certainty", "claims", "qa", "policy", "names", "glossary", "references"]},
+    "records": {"type": "array", "maxItems": 20000}
+  },
+  "allOf": [
+    {"if": {"properties": {"module": {"const": "chapters"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/chapter"}}}}},
+    {"if": {"properties": {"module": {"const": "summaries"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/summary"}}}}},
+    {"if": {"properties": {"module": {"const": "chapter_terms"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/chapterTerms"}}}}},
+    {"if": {"properties": {"module": {"const": "certainty"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/certainty"}}}}},
+    {"if": {"properties": {"module": {"const": "claims"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/claim"}}}}},
+    {"if": {"properties": {"module": {"const": "qa"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/qa"}}}}},
+    {"if": {"properties": {"module": {"const": "policy"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/policy"}}}}},
+    {"if": {"properties": {"module": {"const": "names"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/name"}}}}},
+    {"if": {"properties": {"module": {"const": "glossary"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/term"}}}}},
+    {"if": {"properties": {"module": {"const": "references"}}}, "then": {"properties": {"records": {"items": {"$ref": "#/$defs/reference"}, "contains": {"type": "object", "required": ["relation"], "properties": {"relation": {"const": "official_companion"}}}, "minContains": 0, "maxContains": 32}}}}
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "strings": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "draftFields": {
+      "status": {"enum": ["draft", "reviewed", "approved"]},
+      "review_notes": {"type": "string"}
+    },
+    "chapter": {
+      "type": "object", "required": ["id", "title", "sections", "summary", "terms"],
+      "properties": {
+        "id": {"type": "string"}, "kind": {"type": "string"}, "title": {"type": "string"}, "pages": {"type": "string"},
+        "sections": {"$ref": "#/$defs/strings"}, "summary": {"type": "string"}, "terms": {"$ref": "#/$defs/strings"},
+        "contributors": {"$ref": "#/$defs/strings"}, "aliases": {"$ref": "#/$defs/strings"},
+        "learning_objectives": {"$ref": "#/$defs/strings"}, "prerequisites": {"$ref": "#/$defs/strings"},
+        "spoiler_scope": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "status": {"type": "string"}, "review_notes": {"type": "string"}
+      }, "additionalProperties": false
+    },
+    "summary": {"type": "object", "required": ["chapter_id", "summary"], "properties": {"chapter_id": {"type": "string"}, "summary": {"type": "string"}}, "additionalProperties": false},
+    "chapterTerms": {"type": "object", "required": ["chapter_id", "terms"], "properties": {"chapter_id": {"type": "string"}, "terms": {"$ref": "#/$defs/strings"}}, "additionalProperties": false},
+    "certainty": {"type": "object", "required": ["id", "label", "definition"], "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "definition": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "status": {"type": "string"}, "review_notes": {"type": "string"}}, "additionalProperties": false},
+    "claim": {
+      "type": "object", "required": ["id", "layer", "kind", "statement", "chapter_ids"],
+      "properties": {"id": {"type": "string"}, "layer": {"type": "string"}, "kind": {"type": "string"}, "statement": {"type": "string"}, "chapter_ids": {"$ref": "#/$defs/strings"}, "certainty_id": {"type": "string"}, "falsifiability": {"type": "string"}, "revision_conditions": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "reader_note": {"type": "string"}, "status": {"type": "string"}, "review_notes": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "qa": {
+      "type": "object", "required": ["id", "response", "chapter_ids"],
+      "properties": {"id": {"type": "string"}, "kind": {"type": "string"}, "issue": {"type": "string"}, "misreading": {"type": "string"}, "response": {"type": "string"}, "impact": {"type": "string"}, "remaining_uncertainty": {"type": "string"}, "chapter_ids": {"$ref": "#/$defs/strings"}, "claim_ids": {"$ref": "#/$defs/strings"}, "anchor": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "status": {"type": "string"}, "review_notes": {"type": "string"}},
+      "oneOf": [
+        {"required": ["issue"], "not": {"required": ["misreading"]}},
+        {"required": ["misreading"], "not": {"required": ["issue"]}}
+      ],
+      "additionalProperties": false
+    },
+    "policy": {"type": "object", "required": ["id", "kind", "statement"], "properties": {"id": {"type": "string"}, "kind": {"enum": ["authority_order", "language_precedence", "translation_rights", "retrieval", "publisher_relation", "usage_terms", "other"]}, "statement": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "status": {"type": "string"}, "review_notes": {"type": "string"}}, "additionalProperties": false},
+    "name": {"type": "object", "required": ["id", "name", "chapter_id"], "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "aliases": {"$ref": "#/$defs/strings"}, "chapter_id": {"type": "string"}, "book_context": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "status": {"type": "string"}, "review_notes": {"type": "string"}}, "additionalProperties": false},
+    "term": {"type": "object", "required": ["id", "term", "chapter_id"], "properties": {"id": {"type": "string"}, "term": {"type": "string"}, "aliases": {"$ref": "#/$defs/strings"}, "chapter_id": {"type": "string"}, "book_meaning": {"type": "string"}, "source_locations": {"$ref": "#/$defs/strings"}, "status": {"type": "string"}, "review_notes": {"type": "string"}}, "additionalProperties": false},
+    "reference": {
+      "type": "object",
+      "required": ["id", "url", "label"],
+      "properties": {
+        "id": {"type": "string"},
+        "url": {"type": "string"},
+        "label": {"type": "string"},
+        "relation": {"const": "official_companion"},
+        "url_scope": {"enum": ["exact", "prefix"]},
+        "retrieval_policy": {"const": "proactive_when_relevant"},
+        "source_locations": {"$ref": "#/$defs/strings"},
+        "status": {"type": "string"},
+        "review_notes": {"type": "string"}
+      },
+      "dependentRequired": {
+        "relation": ["url_scope", "retrieval_policy"],
+        "url_scope": ["relation", "retrieval_policy"],
+        "retrieval_policy": ["relation", "url_scope"]
+      },
+      "additionalProperties": false
+    }
+  }
+}

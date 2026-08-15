@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/qa-plan.schema.json",
+  "title": "Reading Pack body-free author Q&A plan",
+  "type": "object",
+  "required": [
+    "schema_version", "plan_id", "source", "items", "diagnostics", "outcome"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^QP-[A-F0-9]{20}$"},
+    "source": {"$ref": "#/$defs/source"},
+    "items": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {"$ref": "#/$defs/item"}
+    },
+    "diagnostics": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {"$ref": "#/$defs/diagnostic"}
+    },
+    "outcome": {"enum": ["ready", "review_required", "blocked"]}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["id", "role", "language", "format", "name", "sha256", "size_bytes"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "role": {"const": "author-qa"},
+        "language": {"enum": ["ja", "en", "und"]},
+        "format": {"enum": ["org", "json"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0, "maximum": 104857600}
+      },
+      "additionalProperties": false
+    },
+    "locator": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["scheme", "start"],
+          "properties": {
+            "scheme": {"const": "json-pointer"},
+            "start": {"type": "string", "pattern": "^/items/[0-9]+/(?:criticism|impact|response|remaining_uncertainty)$"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["scheme", "start", "end"],
+          "properties": {
+            "scheme": {"const": "unicode-character"},
+            "start": {"type": "integer", "minimum": 0},
+            "end": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "facet": {
+      "type": "object",
+      "required": ["locator", "content_sha256", "characters"],
+      "properties": {
+        "locator": {"$ref": "#/$defs/locator"},
+        "content_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "characters": {"type": "integer", "minimum": 1, "maximum": 100000}
+      },
+      "additionalProperties": false
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "qa_id", "candidate_record_id", "source_key", "kind", "chapter_ids",
+        "claim_ids", "facets", "provenance"
+      ],
+      "properties": {
+        "qa_id": {"type": "string", "pattern": "^QI-[A-F0-9]{20}$"},
+        "candidate_record_id": {"type": "string", "pattern": "^MIS-[A-Z0-9][A-Z0-9.-]*$"},
+        "source_key": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$"},
+        "kind": {
+          "enum": [
+            "misreading", "clarification", "open_objection", "author_update", "unresolved"
+          ]
+        },
+        "chapter_ids": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CH-[A-Z0-9][A-Z0-9.-]{0,99}$"}
+        },
+        "claim_ids": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^(?:CL|PROP)-[A-Z0-9][A-Z0-9.-]{0,99}$"}
+        },
+        "facets": {
+          "type": "object",
+          "required": ["criticism", "impact", "response", "remaining_uncertainty"],
+          "properties": {
+            "criticism": {"$ref": "#/$defs/facet"},
+            "impact": {"$ref": "#/$defs/facet"},
+            "response": {"$ref": "#/$defs/facet"},
+            "remaining_uncertainty": {"$ref": "#/$defs/facet"}
+          },
+          "additionalProperties": false
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["source_id", "source_sha256", "method"],
+          "properties": {
+            "source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+            "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "method": {"enum": ["structured-json-v1", "org-definition-list-v1"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^RPQA[0-9]{3}$"},
+        "severity": {"enum": ["info", "warning", "error"]},
+        "message": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "source_key": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

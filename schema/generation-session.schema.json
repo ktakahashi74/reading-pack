@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/generation-session.schema.json",
+  "title": "Reading Pack resumable generation session",
+  "description": "Body-free bindings and response availability for one deterministic work ledger.",
+  "type": "object",
+  "required": [
+    "schema_version", "session_id", "state", "project", "language", "source",
+    "canonical_data_sha256", "ledger", "items", "finalization", "summary",
+    "integrity_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "session_id": {"type": "string", "pattern": "^GS-[A-F0-9]{20}$"},
+    "state": {"enum": ["open", "finalized"]},
+    "project": {
+      "type": "object",
+      "required": ["slug", "config_sha256"],
+      "properties": {
+        "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "config_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "language": {"enum": ["ja", "en"]},
+    "source": {
+      "type": "object",
+      "required": ["name", "format", "sha256"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 500},
+        "format": {"type": "string", "minLength": 1, "maxLength": 50},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "canonical_data_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "purpose": {"const": "coverage"},
+    "coverage_rubric": {"$ref": "#/$defs/coverageRubric"},
+    "chapter_spans": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/chapterSpan"}
+    },
+    "ledger": {
+      "type": "object",
+      "required": ["plan_id", "integrity_sha256"],
+      "properties": {
+        "plan_id": {"type": "string", "pattern": "^WP-[A-F0-9]{20}$"},
+        "integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20000,
+      "items": {
+        "type": "object",
+        "required": ["work_id", "module", "scope", "chapter_range", "response"],
+        "properties": {
+          "work_id": {"type": "string", "pattern": "^WORK-[A-F0-9]{20}$"},
+          "module": {"$ref": "generation-ledger.schema.json#/$defs/module"},
+          "scope": {"$ref": "generation-ledger.schema.json#/$defs/scope"},
+          "chapter_range": {"$ref": "#/$defs/chapterRange"},
+          "response": {
+            "oneOf": [
+              {"type": "null"},
+              {
+                "type": "object",
+                "required": ["sha256", "size_bytes", "generator"],
+                "properties": {
+                  "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+                  "size_bytes": {"type": "integer", "minimum": 1, "maximum": 1048576},
+                  "generator": {"$ref": "#/$defs/generator"}
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "finalization": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["run_id", "run_integrity_sha256", "ledger_integrity_sha256"],
+          "properties": {
+            "run_id": {"type": "string", "minLength": 1, "maxLength": 200},
+            "run_integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "ledger_integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total", "awaiting_response", "ingested"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 1},
+        "awaiting_response": {"type": "integer", "minimum": 0},
+        "ingested": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {"required": ["purpose"]},
+      "then": {"required": ["coverage_rubric"]},
+      "else": {"not": {"required": ["coverage_rubric"]}}
+    },
+    {
+      "if": {"properties": {"state": {"const": "open"}}, "required": ["state"]},
+      "then": {"properties": {"finalization": {"type": "null"}}},
+      "else": {"properties": {"finalization": {"type": "object"}}}
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "chapterSpan": {
+      "type": "object",
+      "required": ["chapter_id", "char_start", "char_end", "span_sha256"],
+      "properties": {
+        "chapter_id": {"type": "string", "minLength": 1, "maxLength": 100},
+        "char_start": {"type": "integer", "minimum": 0},
+        "char_end": {"type": "integer", "minimum": 1},
+        "span_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "coverageRubric": {
+      "type": "object",
+      "required": ["policy", "modules"],
+      "properties": {
+        "policy": {"const": "whole_book_gap_audit_v1"},
+        "modules": {
+          "type": "object",
+          "required": ["summaries", "chapter_terms", "claims", "names", "glossary"],
+          "properties": {
+            "summaries": {"$ref": "#/$defs/rubricCodes"},
+            "chapter_terms": {"$ref": "#/$defs/rubricCodes"},
+            "claims": {"$ref": "#/$defs/rubricCodes"},
+            "names": {"$ref": "#/$defs/rubricCodes"},
+            "glossary": {"$ref": "#/$defs/rubricCodes"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "rubricCodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,99}$"}
+    },
+    "chapterRange": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {"kind": {"const": "book"}},
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind", "chapter_id", "pages"],
+          "properties": {
+            "kind": {"const": "chapter"},
+            "chapter_id": {"type": "string", "minLength": 1, "maxLength": 100},
+            "pages": {"type": "string", "maxLength": 100}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "generator": {
+      "type": "object",
+      "required": ["adapter", "model"],
+      "properties": {
+        "adapter": {"type": "string", "minLength": 1, "maxLength": 500},
+        "model": {"type": "string", "maxLength": 500},
+        "revision": {"type": "string", "maxLength": 500}
+      },
+      "additionalProperties": false
+    }
+  }
+}

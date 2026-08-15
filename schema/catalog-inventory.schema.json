@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/catalog-inventory.schema.json",
+  "title": "Reading Pack private catalog extraction inventory",
+  "description": "Source-bound review candidates for people, subject terms, and references, with chapter bindings for people and terms. An inventory is private staging data, not canonical truth or approval.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "inventory_id",
+    "extractor",
+    "language",
+    "source",
+    "text_sha256",
+    "canonical_data_sha256",
+    "chapter_map",
+    "chapter_spans",
+    "items",
+    "summary",
+    "integrity_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "inventory_id": {"type": "string", "pattern": "^CAT-[A-F0-9]{20}$"},
+    "extractor": {
+      "enum": [
+        "catalog-heuristics-v1",
+        "catalog-heuristics-v2",
+        "catalog-heuristics-v3",
+        "catalog-heuristics-v3-pdf-vertical-conservative"
+      ]
+    },
+    "language": {"enum": ["ja", "en"]},
+    "source": {"$ref": "#/$defs/source"},
+    "text_sha256": {"$ref": "#/$defs/sha256"},
+    "canonical_data_sha256": {"$ref": "#/$defs/sha256"},
+    "chapter_map": {"$ref": "#/$defs/chapterMap"},
+    "chapter_spans": {
+      "type": "array",
+      "maxItems": 20000,
+      "items": {"$ref": "#/$defs/chapterSpan"}
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {"$ref": "#/$defs/item"}
+    },
+    "summary": {"$ref": "#/$defs/summary"},
+    "integrity_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "chapterId": {
+      "type": "string",
+      "pattern": "^CH-[A-Z0-9][A-Z0-9.-]*$"
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "role", "language", "name", "format", "sha256", "size_bytes"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"
+        },
+        "role": {
+          "enum": [
+            "primary-book",
+            "author-qa",
+            "author-canon",
+            "author-data",
+            "errata",
+            "bibliography",
+            "publisher-metadata",
+            "translation"
+          ]
+        },
+        "language": {"enum": ["ja", "en", "und"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 500},
+        "format": {"enum": ["markdown", "org", "json", "csv", "epub3", "pdf", "pdf-vertical", "text"]},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 104857600
+        }
+      },
+      "additionalProperties": false
+    },
+    "chapterMap": {
+      "type": "object",
+      "required": ["method", "review_required"],
+      "properties": {
+        "method": {"enum": ["none", "explicit", "title_sequence"]},
+        "review_required": {"type": "boolean"}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "method": {"const": "title_sequence"},
+            "review_required": {"const": true}
+          }
+        },
+        {
+          "properties": {
+            "method": {"enum": ["none", "explicit"]},
+            "review_required": {"const": false}
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "chapterSpan": {
+      "type": "object",
+      "required": ["chapter_id", "char_start", "char_end", "span_sha256"],
+      "properties": {
+        "chapter_id": {"$ref": "#/$defs/chapterId"},
+        "char_start": {"type": "integer", "minimum": 0},
+        "char_end": {"type": "integer", "minimum": 1},
+        "span_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
+    "chapterBinding": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["state", "chapter_id"],
+          "properties": {
+            "state": {"const": "resolved"},
+            "chapter_id": {"$ref": "#/$defs/chapterId"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["state", "chapter_id"],
+          "properties": {
+            "state": {"const": "unresolved"},
+            "chapter_id": {"const": ""}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "occurrence": {
+      "type": "object",
+      "required": ["char_start", "char_end", "span_sha256"],
+      "properties": {
+        "char_start": {"type": "integer", "minimum": 0},
+        "char_end": {"type": "integer", "minimum": 1},
+        "span_sha256": {"$ref": "#/$defs/sha256"},
+        "chapter_id": {"$ref": "#/$defs/chapterId"}
+      },
+      "additionalProperties": false
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "item_id",
+        "kind",
+        "label",
+        "url",
+        "chapter",
+        "confidence",
+        "reason_codes",
+        "occurrences"
+      ],
+      "properties": {
+        "item_id": {"type": "string", "pattern": "^CI-[A-F0-9]{20}$"},
+        "kind": {"enum": ["person", "term", "reference"]},
+        "label": {"type": "string", "minLength": 1, "maxLength": 200},
+        "url": {"type": "string", "maxLength": 2048},
+        "chapter": {"$ref": "#/$defs/chapterBinding"},
+        "confidence": {"enum": ["low", "medium", "high"]},
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,99}$"
+          }
+        },
+        "occurrences": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {"$ref": "#/$defs/occurrence"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"kind": {"const": "reference"}},
+            "required": ["kind"]
+          },
+          "then": {
+            "properties": {
+              "url": {"type": "string", "pattern": "^https?://.+"}
+            }
+          },
+          "else": {
+            "properties": {"url": {"const": ""}}
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "people",
+        "terms",
+        "references",
+        "unresolved_people",
+        "unresolved_terms",
+        "resolved_chapters"
+      ],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "people": {"type": "integer", "minimum": 0},
+        "terms": {"type": "integer", "minimum": 0},
+        "references": {"type": "integer", "minimum": 0},
+        "unresolved_people": {"type": "integer", "minimum": 0},
+        "unresolved_terms": {"type": "integer", "minimum": 0},
+        "resolved_chapters": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

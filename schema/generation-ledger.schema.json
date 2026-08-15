@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/generation-ledger.schema.json",
+  "title": "Reading Pack body-free generation work ledger",
+  "description": "Deterministic module/scope coverage. Completion records candidate production, not semantic correctness or approval.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_id",
+    "language",
+    "canonical_data_sha256",
+    "run",
+    "modules",
+    "items",
+    "summary",
+    "integrity_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^WP-[A-F0-9]{20}$"},
+    "language": {"enum": ["ja", "en"]},
+    "canonical_data_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "run": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["run_id", "integrity_sha256"],
+          "properties": {
+            "run_id": {"type": "string", "minLength": 1, "maxLength": 200},
+            "integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 11,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/module"}
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20000,
+      "items": {"$ref": "#/$defs/workItem"}
+    },
+    "summary": {"$ref": "#/$defs/summary"},
+    "integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "module": {
+      "enum": [
+        "chapters",
+        "summaries",
+        "chapter_terms",
+        "certainty",
+        "claims",
+        "qa",
+        "misreadings",
+        "policy",
+        "names",
+        "glossary",
+        "references"
+      ]
+    },
+    "scope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "chapter_id"],
+          "properties": {
+            "kind": {"const": "chapter"},
+            "chapter_id": {"type": "string", "minLength": 1, "maxLength": 100}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {"kind": {"const": "book"}},
+          "additionalProperties": false
+        }
+      ]
+    },
+    "candidateIds": {
+      "type": "array",
+      "maxItems": 2000,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"}
+    },
+    "workItem": {
+      "type": "object",
+      "required": [
+        "work_id",
+        "module",
+        "scope",
+        "status",
+        "reason_code",
+        "candidate_ids"
+      ],
+      "properties": {
+        "work_id": {"type": "string", "pattern": "^WORK-[A-F0-9]{20}$"},
+        "module": {"$ref": "#/$defs/module"},
+        "scope": {"$ref": "#/$defs/scope"},
+        "status": {
+          "enum": [
+            "pending",
+            "complete",
+            "no_supported_candidate",
+            "failed",
+            "skipped"
+          ]
+        },
+        "reason_code": {
+          "type": "string",
+          "pattern": "^$|^[a-z][a-z0-9_]{0,99}$"
+        },
+        "candidate_ids": {"$ref": "#/$defs/candidateIds"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "reason_code": {"const": ""},
+              "candidate_ids": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": ["no_supported_candidate", "failed", "skipped"]
+              }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "reason_code": {"minLength": 1},
+              "candidate_ids": {"maxItems": 0}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "pending"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "reason_code": {"const": ""},
+              "candidate_ids": {"maxItems": 0}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "pending",
+        "complete",
+        "no_supported_candidate",
+        "failed",
+        "skipped"
+      ],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "pending": {"type": "integer", "minimum": 0},
+        "complete": {"type": "integer", "minimum": 0},
+        "no_supported_candidate": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "skipped": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

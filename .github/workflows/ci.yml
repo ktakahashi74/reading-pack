@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package and runtime dependencies
+        run: python -m pip install .
+      - name: Compile
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONPATH: src
+        run: python -m compileall -q src tests
+      - name: Unit and end-to-end tests
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests -v
+      - name: Check synthetic release fixture
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONPATH: src
+        run: python -m reading_pack check --project examples/clockwork-garden --lang all --release
+      - name: Verify distribution license files
+        run: |
+          python -m pip wheel --no-deps . --wheel-dir build/wheel
+          python - <<'PY'
+          import glob
+          import zipfile
+
+          wheels = glob.glob("build/wheel/reading_pack-*.whl")
+          if len(wheels) != 1:
+              raise SystemExit(f"expected exactly one wheel, found {wheels!r}")
+          with zipfile.ZipFile(wheels[0]) as archive:
+              names = archive.namelist()
+          required = (
+              ".dist-info/licenses/LICENSE",
+              ".dist-info/licenses/LICENSES/CC-BY-4.0.txt",
+              ".dist-info/licenses/LICENSES/README.md",
+          )
+          missing = [suffix for suffix in required if not any(name.endswith(suffix) for name in names)]
+          if missing:
+              raise SystemExit(f"wheel is missing required license files: {missing!r}")
+          PY
+      - name: Repository audit
+        run: git diff --check

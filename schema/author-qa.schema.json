@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/author-qa.schema.json",
+  "title": "Structured author Q&A input",
+  "type": "object",
+  "required": ["format_version", "items"],
+  "properties": {
+    "format_version": {"const": 1},
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2000,
+      "items": {"$ref": "#/$defs/item"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": [
+        "source_key", "kind", "chapter_ids", "criticism", "impact",
+        "response", "remaining_uncertainty"
+      ],
+      "properties": {
+        "source_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$"
+        },
+        "kind": {
+          "enum": ["misreading", "clarification", "open_objection", "author_update"]
+        },
+        "chapter_ids": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CH-[A-Z0-9][A-Z0-9.-]{0,99}$"}
+        },
+        "claim_ids": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^(?:CL|PROP)-[A-Z0-9][A-Z0-9.-]{0,99}$"}
+        },
+        "criticism": {"type": "string", "minLength": 1, "maxLength": 100000},
+        "impact": {"type": "string", "minLength": 1, "maxLength": 100000},
+        "response": {"type": "string", "minLength": 1, "maxLength": 100000},
+        "remaining_uncertainty": {"type": "string", "minLength": 1, "maxLength": 100000}
+      },
+      "additionalProperties": false
+    }
+  }
+}

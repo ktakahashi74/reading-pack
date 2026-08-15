@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/source-plan.schema.json",
+  "title": "Reading Pack body-free source registration plan",
+  "type": "object",
+  "required": ["schema_version", "plan_id", "source"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^SP-[A-F0-9]{20}$"},
+    "source": {"$ref": "#/$defs/source"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["id", "role", "language", "format", "name", "sha256", "size_bytes"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "role": {
+          "enum": [
+            "primary-book", "author-qa", "author-canon", "author-data", "errata",
+            "bibliography", "publisher-metadata", "translation"
+          ]
+        },
+        "language": {"enum": ["ja", "en", "und"]},
+        "format": {"enum": ["markdown", "org", "json", "csv", "epub3", "pdf", "pdf-vertical", "text"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0, "maximum": 104857600}
+      },
+      "additionalProperties": false
+    }
+  }
+}

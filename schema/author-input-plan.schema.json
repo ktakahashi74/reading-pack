@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/author-input-plan.schema.json",
+  "title": "Reading Pack body-free Author Input Package change plan",
+  "type": "object",
+  "required": ["schema_version", "plan_id", "packages", "base_canonical_sha256", "prospective_canonical_sha256", "languages", "attachments"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "plan_id": {"type": "string", "pattern": "^AIPLAN-[A-F0-9]{20}$"},
+    "packages": {"type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true, "items": {"$ref": "#/$defs/package"}},
+    "base_canonical_sha256": {"$ref": "#/$defs/sha256"},
+    "prospective_canonical_sha256": {"$ref": "#/$defs/sha256"},
+    "languages": {
+      "type": "object", "minProperties": 1, "maxProperties": 2,
+      "propertyNames": {"enum": ["ja", "en"]},
+      "additionalProperties": {"$ref": "#/$defs/languageSummary"}
+    },
+    "attachments": {"type": "array", "maxItems": 1000, "items": {"$ref": "#/$defs/source"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "authority": {
+      "type": "object", "required": ["type", "name", "supplied_at"],
+      "properties": {"type": {"enum": ["author", "editor", "publisher", "rights-holder"]}, "name": {"type": "string", "minLength": 1, "maxLength": 500}, "supplied_at": {"type": "string", "format": "date"}},
+      "additionalProperties": false
+    },
+    "package": {
+      "type": "object",
+      "required": ["package_id", "language", "manifest_sha256", "authority"],
+      "properties": {
+        "package_id": {"type": "string", "pattern": "^AIP-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "language": {"enum": ["ja", "en"]},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "authority": {"$ref": "#/$defs/authority"}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object", "required": ["id", "role", "language", "format", "name", "sha256", "size_bytes"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "role": {"enum": ["primary-book", "author-qa", "author-canon", "author-data", "errata", "bibliography", "publisher-metadata", "translation"]},
+        "language": {"enum": ["ja", "en", "und"]}, "format": {"enum": ["markdown", "org", "json", "csv", "epub3", "pdf", "pdf-vertical", "text"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 500}, "sha256": {"$ref": "#/$defs/sha256"}, "size_bytes": {"type": "integer", "minimum": 0, "maximum": 104857600}
+      }, "additionalProperties": false
+    },
+    "hashMap": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+    "ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "moduleSummary": {
+      "type": "object",
+      "required": ["mode", "source", "provided_record_ids", "provided_record_hashes", "added_ids", "replaced_ids", "removed_ids", "preserved_ids", "canonical_count_after"],
+      "properties": {
+        "mode": {"enum": ["provided", "augment", "generate", "omit"]},
+        "source": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/source"}]},
+        "provided_record_ids": {"$ref": "#/$defs/ids"}, "provided_record_hashes": {"$ref": "#/$defs/hashMap"},
+        "added_ids": {"$ref": "#/$defs/ids"}, "replaced_ids": {"$ref": "#/$defs/ids"}, "removed_ids": {"$ref": "#/$defs/ids"}, "preserved_ids": {"$ref": "#/$defs/ids"},
+        "canonical_count_after": {"type": "integer", "minimum": 0}
+      }, "additionalProperties": false
+    },
+    "modules": {
+      "type": "object", "required": ["chapters", "summaries", "chapter_terms", "certainty", "claims", "qa", "names", "glossary", "references"],
+      "properties": {"chapters": {"$ref": "#/$defs/moduleSummary"}, "summaries": {"$ref": "#/$defs/moduleSummary"}, "chapter_terms": {"$ref": "#/$defs/moduleSummary"}, "certainty": {"$ref": "#/$defs/moduleSummary"}, "claims": {"$ref": "#/$defs/moduleSummary"}, "qa": {"$ref": "#/$defs/moduleSummary"}, "policy": {"$ref": "#/$defs/moduleSummary"}, "names": {"$ref": "#/$defs/moduleSummary"}, "glossary": {"$ref": "#/$defs/moduleSummary"}, "references": {"$ref": "#/$defs/moduleSummary"}},
+      "additionalProperties": false
+    },
+    "languageSummary": {
+      "type": "object", "required": ["modules"],
+      "properties": {"modules": {"$ref": "#/$defs/modules"}},
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/generation-response.schema.json",
+  "title": "Reading Pack bounded generation work response",
+  "type": "object",
+  "required": [
+    "schema_version", "session_id", "work_id", "project", "language",
+    "source_sha256", "canonical_data_sha256", "module", "scope",
+    "chapter_range", "outcome", "records", "generator"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "session_id": {"type": "string", "pattern": "^GS-[A-F0-9]{20}$"},
+    "work_id": {"type": "string", "pattern": "^WORK-[A-F0-9]{20}$"},
+    "project": {
+      "type": "object",
+      "required": ["slug", "config_sha256"],
+      "properties": {
+        "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "config_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "language": {"enum": ["ja", "en"]},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "canonical_data_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "module": {"$ref": "#/$defs/module"},
+    "scope": {"$ref": "#/$defs/scope"},
+    "chapter_range": {"$ref": "#/$defs/chapterRange"},
+    "outcome": {
+      "type": "object",
+      "required": ["status", "reason_code"],
+      "properties": {
+        "status": {"enum": ["complete", "no_supported_candidate", "failed", "skipped"]},
+        "reason_code": {"type": "string", "pattern": "^$|^[a-z][a-z0-9_]{0,99}$"}
+      },
+      "additionalProperties": false
+    },
+    "records": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "required": ["record", "evidence"],
+        "properties": {
+          "record": {"type": "object", "maxProperties": 32},
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "required": ["snippet"],
+              "properties": {
+                "snippet": {"type": "string", "minLength": 8, "maxLength": 500},
+                "occurrence": {"type": "integer", "minimum": 0, "maximum": 10000},
+                "supports_field": {"type": "string", "maxLength": 100}
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "generator": {"$ref": "#/$defs/generator"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"outcome": {"properties": {"status": {"const": "complete"}}}},
+        "required": ["outcome"]
+      },
+      "then": {
+        "properties": {
+          "outcome": {"properties": {"reason_code": {"const": ""}}},
+          "records": {"minItems": 1}
+        }
+      },
+      "else": {
+        "properties": {
+          "outcome": {"properties": {"reason_code": {"minLength": 1}}},
+          "records": {"maxItems": 0}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "module": {
+      "enum": [
+        "chapters", "summaries", "chapter_terms", "certainty", "claims",
+        "qa", "misreadings", "policy", "names", "glossary", "references"
+      ]
+    },
+    "scope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {"kind": {"const": "book"}},
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind", "chapter_id"],
+          "properties": {
+            "kind": {"const": "chapter"},
+            "chapter_id": {"type": "string", "minLength": 1, "maxLength": 100}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "chapterRange": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {"kind": {"const": "book"}},
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind", "chapter_id", "pages"],
+          "properties": {
+            "kind": {"const": "chapter"},
+            "chapter_id": {"type": "string", "minLength": 1, "maxLength": 100},
+            "pages": {"type": "string", "maxLength": 100}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "generator": {
+      "type": "object",
+      "required": ["adapter", "model"],
+      "properties": {
+        "adapter": {"type": "string", "minLength": 1, "maxLength": 500},
+        "model": {"type": "string", "maxLength": 500},
+        "revision": {"type": "string", "maxLength": 500}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

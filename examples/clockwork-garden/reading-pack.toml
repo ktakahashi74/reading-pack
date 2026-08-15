@@ -1,0 +1,32 @@
+format_version = 1
+slug = "clockwork-garden"
+version = "1.0.0"
+pack_date = "2026-08-12"
+status = "canonical"
+primary_language = "ja"
+languages = ["ja", "en"]
+level = 3
+output_basename = "clockwork-garden-reading-pack"
+
+[book]
+title = "歯車仕掛けの庭"
+author = "Mira Aoki"
+publisher = "Example Press"
+publication_date = "2026-04-01"
+isbn = "978-0-00-000000-0"
+official_url = "https://example.com/clockwork-garden/"
+copyright_holder = "Mira Aoki"
+copyright_year = 2026
+pack_license = "CC0 1.0 Universal"
+
+[workflow]
+design_constraints = "approved"
+rights_review = "approved"
+author_review = "approved"
+publisher_review = "not_required"
+reconstruction_review = "approved"
+publication_decision = "approved"
+
+[limits]
+max_summary_characters = 500
+max_pack_characters = 100000

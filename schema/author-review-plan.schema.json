@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/author-review-plan.schema.json",
+  "title": "Body-free author review application plan",
+  "type": "object",
+  "required": [
+    "schema_version", "plan_id", "review_id", "manifest_sha256",
+    "decisions_sha256", "slug", "reviewer", "reviewed_at",
+    "canonical_state_sha256_before", "canonical_data_sha256_before",
+    "canonical_state_sha256_after", "canonical_data_sha256_after",
+    "config_sha256_before", "config_sha256_after", "final_signoff",
+    "actions", "field_overrides", "summary"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^ARPLAN-[A-F0-9]{20}$"},
+    "review_id": {"type": "string", "pattern": "^AR-[A-F0-9]{20}$"},
+    "manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "decisions_sha256": {"$ref": "#/$defs/sha256"},
+    "slug": {"type": "string", "minLength": 1},
+    "reviewer": {"type": "string", "minLength": 1, "maxLength": 500},
+    "reviewed_at": {"type": "string", "format": "date"},
+    "canonical_state_sha256_before": {"$ref": "#/$defs/sha256"},
+    "canonical_data_sha256_before": {"$ref": "#/$defs/sha256"},
+    "canonical_state_sha256_after": {"$ref": "#/$defs/sha256"},
+    "canonical_data_sha256_after": {"$ref": "#/$defs/sha256"},
+    "config_sha256_before": {"$ref": "#/$defs/sha256"},
+    "config_sha256_after": {"$ref": "#/$defs/sha256"},
+    "final_signoff": {"type": "boolean"},
+    "actions": {"type": "array", "maxItems": 100000, "items": {"$ref": "#/$defs/action"}},
+    "field_overrides": {"type": "array", "maxItems": 100000, "items": {"$ref": "#/$defs/fieldOverride"}},
+    "summary": {
+      "type": "object", "required": ["approve", "revise", "exclude", "unchanged"],
+      "properties": {
+        "approve": {"type": "integer", "minimum": 0},
+        "revise": {"type": "integer", "minimum": 0},
+        "exclude": {"type": "integer", "minimum": 0},
+        "unchanged": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "nullableSha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+    "action": {
+      "type": "object",
+      "required": [
+        "unit_id", "language", "collection", "module", "module_state_sha256",
+        "record_id", "decision", "before_sha256", "after_sha256",
+        "before_status", "after_status", "before_translation_status",
+        "after_translation_status", "changed_fields", "comment_sha256"
+      ],
+      "properties": {
+        "unit_id": {"type": "string", "pattern": "^ARU-[0-9]{6}$"},
+        "language": {"enum": ["ja", "en"]},
+        "collection": {"enum": ["chapters", "certainty", "claims", "misreadings", "policies", "names", "glossary", "references"]},
+        "module": {"enum": ["chapters", "certainty", "claims", "qa", "policy", "names", "glossary", "references"]},
+        "module_state_sha256": {"$ref": "#/$defs/sha256"},
+        "record_id": {"type": "string", "minLength": 1},
+        "decision": {"enum": ["approve", "revise", "exclude"]},
+        "before_sha256": {"$ref": "#/$defs/sha256"},
+        "after_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "before_status": {"enum": ["draft", "reviewed", "approved"]},
+        "after_status": {"enum": [null, "draft", "approved"]},
+        "before_translation_status": {"enum": [null, "draft", "reviewed", "approved"]},
+        "after_translation_status": {"enum": [null, "draft", "approved"]},
+        "changed_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "comment_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
+    "fieldOverride": {
+      "type": "object",
+      "required": ["language", "module", "module_state_sha256", "record_id", "field", "before_sha256", "after_sha256"],
+      "properties": {
+        "language": {"enum": ["ja", "en"]},
+        "module": {"enum": ["summaries", "chapter_terms"]},
+        "module_state_sha256": {"$ref": "#/$defs/sha256"},
+        "record_id": {"type": "string", "minLength": 1},
+        "field": {"enum": ["summary", "terms"]},
+        "before_sha256": {"$ref": "#/$defs/sha256"},
+        "after_sha256": {"$ref": "#/$defs/nullableSha256"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

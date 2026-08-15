@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/semantic-review.schema.json",
+  "title": "Reading Pack private semantic review",
+  "description": "Integrity-bound, excerpt-free semantic findings and named human adjudication.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "review_id",
+    "plan_id",
+    "ledger_integrity_sha256",
+    "run",
+    "assessment",
+    "findings",
+    "summary",
+    "integrity_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "review_id": {"type": "string", "pattern": "^SR-[A-F0-9]{20}$"},
+    "plan_id": {"type": "string", "pattern": "^WP-[A-F0-9]{20}$"},
+    "ledger_integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "run": {
+      "type": "object",
+      "required": ["run_id", "integrity_sha256"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1, "maxLength": 200},
+        "integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "assessment": {"$ref": "#/$defs/assessment"},
+    "findings": {
+      "type": "array",
+      "maxItems": 20000,
+      "items": {"$ref": "#/$defs/finding"}
+    },
+    "summary": {"$ref": "#/$defs/summary"},
+    "integrity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "assessment": {
+      "type": "object",
+      "required": ["status", "assessor", "assessed_candidate_ids"],
+      "properties": {
+        "status": {"enum": ["partial", "complete"]},
+        "assessor": {"type": "string", "minLength": 1, "maxLength": 500},
+        "assessed_candidate_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "finding_id",
+        "work_id",
+        "candidate_id",
+        "category",
+        "severity",
+        "reason_code",
+        "evidence_ref_ids",
+        "adjudication"
+      ],
+      "properties": {
+        "finding_id": {"type": "string", "pattern": "^SEM-[A-F0-9]{20}$"},
+        "work_id": {"type": "string", "pattern": "^WORK-[A-F0-9]{20}$"},
+        "candidate_id": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"},
+        "category": {
+          "enum": [
+            "unsupported",
+            "overstated",
+            "missing_qualifier",
+            "misattributed",
+            "contradictory",
+            "non_atomic",
+            "duplicate",
+            "other"
+          ]
+        },
+        "severity": {"enum": ["warning", "error"]},
+        "reason_code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,99}$"
+        },
+        "evidence_ref_ids": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^EV-[A-F0-9]{16}$"}
+        },
+        "adjudication": {
+          "type": "object",
+          "required": ["decision", "reviewer", "reviewed_at"],
+          "properties": {
+            "decision": {
+              "enum": ["pending", "confirmed", "dismissed", "accepted_risk"]
+            },
+            "reviewer": {"type": "string", "maxLength": 500},
+            "reviewed_at": {"type": "string", "maxLength": 200}
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {"decision": {"const": "pending"}},
+                "required": ["decision"]
+              },
+              "then": {
+                "properties": {
+                  "reviewer": {"const": ""},
+                  "reviewed_at": {"const": ""}
+                }
+              },
+              "else": {
+                "properties": {
+                  "reviewer": {"minLength": 1},
+                  "reviewed_at": {"minLength": 1}
+                }
+              }
+            }
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "warning",
+        "error",
+        "pending",
+        "confirmed",
+        "dismissed",
+        "accepted_risk",
+        "blocking_errors"
+      ],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "warning": {"type": "integer", "minimum": 0},
+        "error": {"type": "integer", "minimum": 0},
+        "pending": {"type": "integer", "minimum": 0},
+        "confirmed": {"type": "integer", "minimum": 0},
+        "dismissed": {"type": "integer", "minimum": 0},
+        "accepted_risk": {"type": "integer", "minimum": 0},
+        "blocking_errors": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

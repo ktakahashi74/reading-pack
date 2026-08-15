@@ -1,0 +1,43 @@
+{
+  "format_version": 1,
+  "profile": "nonfiction-reading",
+  "conformance_required": true,
+  "scope": "complete synthetic example",
+  "authority": {
+    "type": "author",
+    "reviewers": [
+      "Synthetic example authority"
+    ],
+    "status": "approved",
+    "canonical_data_sha256": "3790366b6d35ce183aeed7f978d56276446ecfb6edac33b9bae39f4bc5b58583",
+    "quality_contract_sha256": "7d13f265de574784b0c8e9b556eda85ce6bd3b20716c508fc6dfe57f57a94be0"
+  },
+  "spoiler_policy": "not_applicable",
+  "module_overrides": {},
+  "critical_policies": {
+    "claim_attribution": "approved",
+    "non_reconstruction": "approved",
+    "qualification_preservation": "approved",
+    "rights": "approved",
+    "source_fidelity": "approved"
+  },
+  "acceptance": {
+    "thresholds": {
+      "structure_precision": 1.0,
+      "structure_recall": 1.0,
+      "source_attribution_errors": 0,
+      "invented_records": 0
+    },
+    "result": {
+      "status": "approved",
+      "structure_precision": 1.0,
+      "structure_recall": 1.0,
+      "source_attribution_errors": 0,
+      "invented_records": 0,
+      "canonical_data_sha256": "3790366b6d35ce183aeed7f978d56276446ecfb6edac33b9bae39f4bc5b58583",
+      "evidence_record": "evaluation/synthetic-example-review.json",
+      "evidence_sha256": "5ae9e9783d190bd1a16ea18d05670f65544213f9b825193c125979895221f5b1",
+      "reviewer": "Synthetic example authority"
+    }
+  }
+}

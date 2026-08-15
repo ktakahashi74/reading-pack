@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/quality-plan.schema.json",
+  "title": "Reading Pack profile quality plan",
+  "description": "A gate-based use-profile conformance plan. It is not a quality score.",
+  "type": "object",
+  "required": [
+    "format_version",
+    "profile",
+    "conformance_required",
+    "scope",
+    "authority",
+    "spoiler_policy",
+    "module_overrides",
+    "critical_policies",
+    "acceptance"
+  ],
+  "properties": {
+    "format_version": {"const": 1},
+    "profile": {
+      "enum": [
+        "general-navigation",
+        "academic-argument",
+        "nonfiction-reading",
+        "textbook-learning",
+        "fiction-spoiler-free",
+        "anthology-attribution",
+        "reference-routing"
+      ]
+    },
+    "conformance_required": {"type": "boolean"},
+    "scope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]+$"
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "type",
+        "reviewers",
+        "status",
+        "canonical_data_sha256",
+        "quality_contract_sha256"
+      ],
+      "properties": {
+        "type": {
+          "enum": ["author", "contributor", "scholarly_editor", "rights_holder", "subject_editor"]
+        },
+        "reviewers": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]+$"
+          },
+          "uniqueItems": true
+        },
+        "status": {"enum": ["pending", "reviewed", "approved"]},
+        "canonical_data_sha256": {
+          "type": "string",
+          "pattern": "^$|^[0-9a-f]{64}$"
+        },
+        "quality_contract_sha256": {
+          "type": "string",
+          "pattern": "^$|^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "spoiler_policy": {
+      "enum": ["not_applicable", "spoiler_free", "spoilers_labeled", "full"]
+    },
+    "module_overrides": {
+      "type": "object",
+      "propertyNames": {
+        "enum": ["chapters", "certainty", "claims", "misreadings", "policies", "names", "glossary", "references"]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {"enum": ["required", "optional", "not_applicable"]},
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]+$"
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"status": {"const": "not_applicable"}}},
+            "then": {"required": ["reason"]}
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    "critical_policies": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "source_fidelity", "non_reconstruction", "rights",
+          "claim_attribution", "epistemic_integrity", "qualification_preservation",
+          "learning_coverage", "misconception_safety", "spoiler_control",
+          "interpretive_openness", "contributor_attribution", "authority_coverage",
+          "inventory_completeness", "alias_routing"
+        ]
+      },
+      "additionalProperties": {"enum": ["pending", "reviewed", "approved"]}
+    },
+    "acceptance": {
+      "type": "object",
+      "required": ["thresholds", "result"],
+      "properties": {
+        "thresholds": {
+          "type": "object",
+          "required": [
+            "structure_precision",
+            "structure_recall",
+            "source_attribution_errors",
+            "invented_records"
+          ],
+          "properties": {
+            "structure_precision": {"const": 1.0},
+            "structure_recall": {"const": 1.0},
+            "source_attribution_errors": {"const": 0},
+            "invented_records": {"const": 0},
+            "content_floor": {
+              "description": "Optional no-regression floor bound to a prior pack or other reviewed comparison artifact. Counts are necessary coverage gates, not semantic quality scores.",
+              "type": "object",
+              "required": ["source_label", "source_sha256", "languages"],
+              "properties": {
+                "source_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]+$"
+                },
+                "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                "languages": {
+                  "type": "object",
+                  "minProperties": 1,
+                  "maxProperties": 20,
+                  "patternProperties": {
+                    "^[a-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$": {
+                      "type": "object",
+                      "minProperties": 1,
+                      "properties": {
+                        "chapter_summaries": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "summary_characters": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "chapter_terms": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "certainty_levels": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "claims": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "claims_with_certainty": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "claims_with_falsifiability": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "claims_with_revision_conditions": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "misreadings": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "names": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "names_with_context": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "glossary_terms": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "glossary_terms_with_meaning": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "references": {"type": "integer", "minimum": 0, "maximum": 100000000},
+                        "content_characters": {"type": "integer", "minimum": 0, "maximum": 100000000}
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "status",
+            "structure_precision",
+            "structure_recall",
+            "source_attribution_errors",
+            "invented_records",
+            "canonical_data_sha256",
+            "evidence_record",
+            "evidence_sha256",
+            "reviewer"
+          ],
+          "properties": {
+            "status": {"enum": ["pending", "reviewed", "approved"]},
+            "structure_precision": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "structure_recall": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "source_attribution_errors": {"type": ["integer", "null"], "minimum": 0},
+            "invented_records": {"type": ["integer", "null"], "minimum": 0},
+            "canonical_data_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
+            "evidence_record": {
+              "description": "Project-relative structured evaluation JSON verified by the runtime validator.",
+              "type": "string",
+              "maxLength": 500,
+              "pattern": "^$|^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+\\.json$"
+            },
+            "evidence_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
+            "reviewer": {
+              "type": "string",
+              "maxLength": 500,
+              "pattern": "^$|^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]+$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

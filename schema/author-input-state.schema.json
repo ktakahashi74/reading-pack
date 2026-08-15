@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/author-input-state.schema.json",
+  "title": "Reading Pack body-free author input provenance state",
+  "type": "object",
+  "required": ["schema_version", "languages"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "languages": {
+      "type": "object", "minProperties": 1,
+      "propertyNames": {"enum": ["ja", "en"]},
+      "additionalProperties": {"$ref": "#/$defs/languageState"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "authority": {
+      "type": "object", "required": ["type", "name", "supplied_at"],
+      "properties": {"type": {"enum": ["author", "editor", "publisher", "rights-holder"]}, "name": {"type": "string", "minLength": 1, "maxLength": 500}, "supplied_at": {"type": "string", "format": "date"}},
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object", "required": ["id", "role", "language", "format", "name", "sha256", "size_bytes"],
+      "properties": {"id": {"type": "string"}, "role": {"type": "string"}, "language": {"enum": ["ja", "en", "und"]}, "format": {"type": "string"}, "name": {"type": "string"}, "sha256": {"$ref": "#/$defs/sha256"}, "size_bytes": {"type": "integer", "minimum": 0, "maximum": 104857600}},
+      "additionalProperties": false
+    },
+    "ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "hashMap": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+    "current": {
+      "type": "object", "required": ["mode", "package_id", "manifest_sha256", "authority", "source", "provided_record_ids", "provided_record_hashes", "canonical_count_after"],
+      "properties": {
+        "mode": {"enum": ["provided", "augment", "generate", "omit"]},
+        "package_id": {"type": "string", "pattern": "^(?:|AIP-[A-Z0-9][A-Z0-9.-]{0,99})$"},
+        "manifest_sha256": {"type": "string", "pattern": "^(?:|[a-f0-9]{64})$"},
+        "authority": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/authority"}]},
+        "source": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/source"}]},
+        "provided_record_ids": {"$ref": "#/$defs/ids"}, "provided_record_hashes": {"$ref": "#/$defs/hashMap"},
+        "canonical_count_after": {"type": "integer", "minimum": 0}
+      }, "additionalProperties": false
+    },
+    "modes": {
+      "type": "object", "required": ["chapters", "summaries", "chapter_terms", "certainty", "claims", "qa", "names", "glossary", "references"],
+      "properties": {"chapters": {"enum": ["provided", "augment", "generate", "omit"]}, "summaries": {"enum": ["provided", "augment", "generate", "omit"]}, "chapter_terms": {"enum": ["provided", "augment", "generate", "omit"]}, "certainty": {"enum": ["provided", "augment", "generate", "omit"]}, "claims": {"enum": ["provided", "augment", "generate", "omit"]}, "qa": {"enum": ["provided", "augment", "generate", "omit"]}, "policy": {"enum": ["provided", "augment", "generate", "omit"]}, "names": {"enum": ["provided", "augment", "generate", "omit"]}, "glossary": {"enum": ["provided", "augment", "generate", "omit"]}, "references": {"enum": ["provided", "augment", "generate", "omit"]}},
+      "additionalProperties": false
+    },
+    "history": {
+      "type": "object", "required": ["package_id", "manifest_sha256", "authority", "modes"],
+      "properties": {"package_id": {"type": "string", "pattern": "^AIP-[A-Z0-9][A-Z0-9.-]{0,99}$"}, "manifest_sha256": {"$ref": "#/$defs/sha256"}, "authority": {"$ref": "#/$defs/authority"}, "modes": {"$ref": "#/$defs/modes"}},
+      "additionalProperties": false
+    },
+    "moduleStates": {
+      "type": "object", "required": ["chapters", "summaries", "chapter_terms", "certainty", "claims", "qa", "names", "glossary", "references"],
+      "properties": {"chapters": {"$ref": "#/$defs/current"}, "summaries": {"$ref": "#/$defs/current"}, "chapter_terms": {"$ref": "#/$defs/current"}, "certainty": {"$ref": "#/$defs/current"}, "claims": {"$ref": "#/$defs/current"}, "qa": {"$ref": "#/$defs/current"}, "policy": {"$ref": "#/$defs/current"}, "names": {"$ref": "#/$defs/current"}, "glossary": {"$ref": "#/$defs/current"}, "references": {"$ref": "#/$defs/current"}},
+      "additionalProperties": false
+    },
+    "languageState": {
+      "type": "object", "required": ["modules", "attachments", "history"],
+      "properties": {"modules": {"$ref": "#/$defs/moduleStates"}, "attachments": {"type": "array", "maxItems": 1000, "items": {"$ref": "#/$defs/source"}}, "history": {"type": "array", "maxItems": 1000, "items": {"$ref": "#/$defs/history"}}},
+      "additionalProperties": false
+    }
+  }
+}

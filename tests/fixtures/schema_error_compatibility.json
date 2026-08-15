@@ -1,0 +1,44 @@
+[
+  {
+    "artifact": "project",
+    "schema": "project.schema.json",
+    "path": ["languages"],
+    "value": ["ja", "ja"],
+    "expected": {"code": "RP003", "keyword": "uniqueItems", "message": "contains duplicates"}
+  },
+  {
+    "artifact": "project",
+    "schema": "project.schema.json",
+    "path": ["book", "title"],
+    "value": 42,
+    "expected": {"code": "RP008", "keyword": "type", "message": "must be string"}
+  },
+  {
+    "artifact": "language",
+    "schema": "language-pack.schema.json",
+    "path": ["chapters", 0, "id"],
+    "value": "bad",
+    "expected": {"code": "RP102", "keyword": "pattern", "message": "does not match ^CH-[A-Z0-9][A-Z0-9.-]*$"}
+  },
+  {
+    "artifact": "language",
+    "schema": "language-pack.schema.json",
+    "path": ["references", 0, "url"],
+    "value": 42,
+    "expected": {"code": "RP123", "keyword": "type", "message": "must be string"}
+  },
+  {
+    "artifact": "quality",
+    "schema": "quality-plan.schema.json",
+    "path": ["scope"],
+    "value": [],
+    "expected": {"code": "QP004", "keyword": "type", "message": "must be string"}
+  },
+  {
+    "artifact": "quality",
+    "schema": "quality-plan.schema.json",
+    "path": ["authority", "reviewers"],
+    "value": ["A", "A"],
+    "expected": {"code": "QP030", "keyword": "uniqueItems", "message": "contains duplicates"}
+  }
+]

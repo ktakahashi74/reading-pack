@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this toolkit or specification, please cite it as below."
+title: "Reading Pack: Open-source toolkit for Conversational Editions"
+type: software
+version: 0.4.0
+date-released: 2026-08-14
+authors:
+  - family-names: Takahashi
+    given-names: Koichi
+license: MIT
+repository-code: "https://github.com/koichi-takahashi/reading-pack"
+url: "https://github.com/koichi-takahashi/reading-pack"
+keywords:
+  - reading pack
+  - conversational edition
+  - publishing
+  - bilingual
+abstract: >-
+  An offline-first Python toolkit and bilingual human-review workflow for
+  creating deterministic Reading Packs for books without reproducing the
+  manuscript.

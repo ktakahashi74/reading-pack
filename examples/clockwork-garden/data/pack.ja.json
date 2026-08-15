@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "language": "ja",
+  "source": {
+    "format": "markdown",
+    "name": "book.ja.md",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "book": {
+    "title": "歯車仕掛けの庭",
+    "author": "Mira Aoki"
+  },
+  "chapters": [
+    {
+      "id": "CH-01",
+      "kind": "chapter",
+      "title": "種をまく",
+      "pages": "1-8",
+      "sections": ["設計図", "最初の発芽"],
+      "summary": "月の運行に合わせて動く庭の設計と、その最初の作動を扱う。",
+      "terms": ["月相機構", "可動花壇"],
+      "status": "approved"
+    },
+    {
+      "id": "CH-02",
+      "kind": "chapter",
+      "title": "庭が選ぶ",
+      "pages": "9-16",
+      "sections": ["季節の規則"],
+      "summary": "自律的に動く庭が、町の共同決定へ与えた影響を扱う。",
+      "terms": ["季節規則"],
+      "status": "approved"
+    }
+  ],
+  "certainty": [
+    {
+      "id": "CERT-I",
+      "label": "物語内の明示事項",
+      "definition": "作中で直接述べられ、解釈を補わず確認できる事項。",
+      "status": "approved"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CL-01",
+      "layer": "descriptive",
+      "kind": "story fact",
+      "statement": "庭の花壇は月相に応じて移動する。",
+      "chapter_ids": ["CH-01"],
+      "certainty_id": "CERT-I",
+      "falsifiability": "作中の設計図が月相と無関係な駆動規則を示す場合。",
+      "status": "approved"
+    }
+  ],
+  "misreadings": [
+    {
+      "id": "MIS-01",
+      "misreading": "庭は人間の命令を拒絶する反乱者である。",
+      "response": "庭は定められた季節規則を実行し、その結果が町の選択を変える。",
+      "chapter_ids": ["CH-02"],
+      "status": "approved"
+    }
+  ],
+  "names": [
+    {
+      "id": "NAME-01",
+      "name": "リオ",
+      "chapter_id": "CH-01",
+      "book_context": "リオは、本書で月相機構を設計した人物として紹介される。",
+      "status": "approved"
+    }
+  ],
+  "glossary": [
+    {
+      "id": "TERM-01",
+      "term": "月相機構",
+      "chapter_id": "CH-01",
+      "book_meaning": "本書で、月の位相に応じて庭園を動かす仕組みを指す。",
+      "status": "approved"
+    }
+  ],
+  "references": [
+    {
+      "id": "REF-01",
+      "url": "https://example.com/clockwork-garden/",
+      "label": "公式ページ",
+      "status": "approved"
+    }
+  ]
+}

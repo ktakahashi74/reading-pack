@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/evidence-ref.schema.json",
+  "title": "Reading Pack transient-source evidence reference",
+  "description": "A rehydratable reference. Source prose and excerpts are deliberately absent.",
+  "type": "object",
+  "required": [
+    "id",
+    "source_sha256",
+    "candidate_record_sha256",
+    "locator",
+    "representation",
+    "span_sha256",
+    "support",
+    "excerpt_stored"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^EV-[A-F0-9]{16}$"
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "candidate_record_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "locator": {
+      "type": "object",
+      "required": ["kind", "char_start", "char_end"],
+      "properties": {
+        "kind": {"const": "normalized_text"},
+        "char_start": {"type": "integer", "minimum": 0},
+        "char_end": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "representation": {
+      "enum": [
+        "nfkc-casefold-whitespace-v1",
+        "json-decoded-strings-nfkc-casefold-whitespace-v1"
+      ]
+    },
+    "span_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "support": {
+      "enum": ["direct", "distributed"]
+    },
+    "supports_field": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "excerpt_stored": {
+      "const": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/manual-outline.schema.json",
+  "title": "Reading Pack body-free manual outline sidecar",
+  "type": "object",
+  "required": [
+    "format_version",
+    "source_sha256",
+    "reviewer",
+    "reason",
+    "chapters"
+  ],
+  "properties": {
+    "format_version": {"const": 1},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "reviewer": {"type": "string", "minLength": 1, "maxLength": 500},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+    "chapters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "type": "object",
+        "required": ["source_key", "kind", "title", "pages", "sections"],
+        "properties": {
+          "source_key": {"type": "string", "minLength": 1, "maxLength": 100},
+          "kind": {
+            "enum": [
+              "frontmatter",
+              "part",
+              "chapter",
+              "afterword",
+              "appendix",
+              "notes",
+              "bibliography",
+              "glossary",
+              "index",
+              "colophon",
+              "unknown"
+            ]
+          },
+          "title": {"type": "string", "minLength": 1, "maxLength": 500},
+          "pages": {"type": "string", "maxLength": 100},
+          "sections": {
+            "type": "array",
+            "maxItems": 20000,
+            "items": {"type": "string", "minLength": 1, "maxLength": 500}
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/generation-results.schema.json",
+  "title": "Reading Pack generation work results",
+  "description": "Explicit terminal outcomes from a local/manual generator, reconciled against a candidate run.",
+  "type": "object",
+  "required": ["schema_version", "plan_id", "run_id", "results"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^WP-[A-F0-9]{20}$"},
+    "run_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20000,
+      "items": {"$ref": "#/$defs/result"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "result": {
+      "type": "object",
+      "required": ["work_id", "status", "reason_code", "candidate_ids"],
+      "properties": {
+        "work_id": {"type": "string", "pattern": "^WORK-[A-F0-9]{20}$"},
+        "status": {
+          "enum": ["complete", "no_supported_candidate", "failed", "skipped"]
+        },
+        "reason_code": {
+          "type": "string",
+          "pattern": "^$|^[a-z][a-z0-9_]{0,99}$"
+        },
+        "candidate_ids": {
+          "type": "array",
+          "maxItems": 2000,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "reason_code": {"const": ""},
+              "candidate_ids": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {"enum": ["no_supported_candidate", "failed", "skipped"]}
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "reason_code": {"minLength": 1},
+              "candidate_ids": {"maxItems": 0}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

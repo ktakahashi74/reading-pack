@@ -1,0 +1,417 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/candidate-run.schema.json",
+  "title": "Reading Pack private candidate run",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "created_at",
+    "status",
+    "language",
+    "source",
+    "canonical",
+    "normalization",
+    "leak_policy",
+    "generator",
+    "candidates",
+    "transaction",
+    "summary",
+    "integrity_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "status": {"enum": ["complete", "partial", "failed"]},
+    "language": {"enum": ["ja", "en"]},
+    "source": {
+      "type": "object",
+      "required": ["name", "format", "sha256", "text_sha256"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "role": {
+          "enum": [
+            "primary-book", "author-qa", "author-canon", "author-data", "errata",
+            "bibliography", "publisher-metadata", "translation"
+          ]
+        },
+        "name": {"type": "string", "minLength": 1},
+        "format": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "text_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "dependentRequired": {
+        "id": ["role"],
+        "role": ["id"]
+      },
+      "additionalProperties": false
+    },
+    "normalization": {
+      "enum": [
+        "nfkc-casefold-whitespace-v1",
+        "json-decoded-strings-nfkc-casefold-whitespace-v1"
+      ]
+    },
+    "canonical": {
+      "type": "object",
+      "required": ["data_sha256", "project_data_sha256"],
+      "properties": {
+        "data_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "project_data_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "leak_policy": {
+      "type": "object",
+      "required": ["max_contiguous_characters"],
+      "properties": {
+        "max_contiguous_characters": {"type": "integer", "minimum": 64}
+      },
+      "additionalProperties": false
+    },
+    "generator": {
+      "type": "object",
+      "required": ["adapter", "model"],
+      "properties": {
+        "adapter": {"type": "string", "minLength": 1},
+        "model": {"type": "string"},
+        "revision": {"type": "string"},
+        "settings_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "prompt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "seed": {"type": "integer"},
+        "temperature": {"type": "number"},
+        "top_p": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {"$ref": "#/$defs/candidate"}
+    },
+    "transaction": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": [
+            "state", "before_sha256", "after_sha256",
+            "before_project_sha256", "after_project_sha256", "candidate_ids"
+          ],
+          "properties": {
+            "state": {"const": "prepared"},
+            "before_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "after_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "before_project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "after_project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "candidate_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"}
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "application": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": [
+            "application_id", "before_sha256", "after_sha256",
+            "before_project_sha256", "after_project_sha256", "candidate_ids"
+          ],
+          "properties": {
+            "application_id": {
+              "type": "string",
+              "pattern": "^APP-[A-F0-9]{20}$"
+            },
+            "before_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "after_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "before_project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "after_project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "candidate_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"}
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "proposed",
+        "quarantined",
+        "ready_for_review",
+        "accepted",
+        "applying",
+        "rejected",
+        "applied"
+      ],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "proposed": {"type": "integer", "minimum": 0},
+        "quarantined": {"type": "integer", "minimum": 0},
+        "ready_for_review": {"type": "integer", "minimum": 0},
+        "accepted": {"type": "integer", "minimum": 0},
+        "applying": {"type": "integer", "minimum": 0},
+        "rejected": {"type": "integer", "minimum": 0},
+        "applied": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "integrity_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "properties": {"format": {"const": "json"}},
+            "required": ["format"]
+          }
+        },
+        "required": ["source"]
+      },
+      "then": {
+        "properties": {
+          "normalization": {
+            "const": "json-decoded-strings-nfkc-casefold-whitespace-v1"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "normalization": {"const": "nfkc-casefold-whitespace-v1"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "normalization": {
+            "const": "json-decoded-strings-nfkc-casefold-whitespace-v1"
+          }
+        },
+        "required": ["normalization"]
+      },
+      "then": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "properties": {
+                "evidence_refs": {
+                  "items": {
+                    "properties": {
+                      "representation": {
+                        "const": "json-decoded-strings-nfkc-casefold-whitespace-v1"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "properties": {
+                "evidence_refs": {
+                  "items": {
+                    "properties": {
+                      "representation": {"const": "nfkc-casefold-whitespace-v1"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "candidateState": {
+      "enum": [
+        "proposed",
+        "quarantined",
+        "ready_for_review",
+        "accepted",
+        "applying",
+        "rejected",
+        "applied"
+      ]
+    },
+    "candidateRecord": {
+      "type": "object",
+      "required": ["id", "status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "status": {"const": "draft"},
+        "translation_status": {"const": "draft"}
+      }
+    },
+    "qa": {
+      "type": "object",
+      "required": ["passed", "reason_codes"],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "candidate_id",
+        "collection",
+        "record_id",
+        "record_sha256",
+        "base_record_sha256",
+        "evidence_refs",
+        "candidate_state",
+        "review",
+        "qa"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "pattern": "^CAND-[A-F0-9]{20}$"
+        },
+        "collection": {
+          "enum": [
+            "chapters",
+            "certainty",
+            "claims",
+            "misreadings",
+            "policies",
+            "names",
+            "glossary",
+            "references",
+            "unknown"
+          ]
+        },
+        "record_id": {"type": "string"},
+        "record_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "base_record_sha256": {
+          "type": "string",
+          "pattern": "^(?:[a-f0-9]{64})?$"
+        },
+        "record": {"$ref": "#/$defs/candidateRecord"},
+        "evidence_refs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/evidenceRef"}
+        },
+        "candidate_state": {"$ref": "#/$defs/candidateState"},
+        "review": {
+          "type": "object",
+          "required": [
+            "status", "reviewer", "reviewed_at", "candidate_record_sha256",
+            "candidate_artifact_sha256"
+          ],
+          "properties": {
+            "status": {"enum": ["pending", "accepted", "rejected"]},
+            "reviewer": {"type": "string", "maxLength": 500},
+            "reviewer_type": {"enum": ["human", "ai"]},
+            "review_method": {"type": "string", "maxLength": 500},
+            "review_artifact_sha256": {
+              "type": "string",
+              "pattern": "^(?:[a-f0-9]{64})?$"
+            },
+            "reviewed_at": {"type": "string", "maxLength": 200},
+            "candidate_record_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "candidate_artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          },
+          "dependentRequired": {
+            "reviewer_type": ["review_method", "review_artifact_sha256"],
+            "review_method": ["reviewer_type", "review_artifact_sha256"],
+            "review_artifact_sha256": ["reviewer_type", "review_method"]
+          },
+          "additionalProperties": false
+        },
+        "qa": {"$ref": "#/$defs/qa"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "candidate_state": {"enum": ["ready_for_review", "accepted", "applying", "applied"]}
+            },
+            "required": ["candidate_state"]
+          },
+          "then": {
+            "required": ["record"],
+            "properties": {
+              "qa": {
+                "properties": {"passed": {"const": true}}
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "evidenceRef": {
+      "type": "object",
+      "required": [
+        "id",
+        "source_sha256",
+        "candidate_record_sha256",
+        "locator",
+        "representation",
+        "span_sha256",
+        "support",
+        "excerpt_stored"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^EV-[A-F0-9]{16}$"},
+        "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "candidate_record_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "locator": {
+          "type": "object",
+          "required": ["kind", "char_start", "char_end"],
+          "properties": {
+            "kind": {"const": "normalized_text"},
+            "char_start": {"type": "integer", "minimum": 0},
+            "char_end": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": false
+        },
+        "representation": {
+          "enum": [
+            "nfkc-casefold-whitespace-v1",
+            "json-decoded-strings-nfkc-casefold-whitespace-v1"
+          ]
+        },
+        "span_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "support": {"enum": ["direct", "distributed"]},
+        "supports_field": {"type": "string", "minLength": 1, "maxLength": 100},
+        "excerpt_stored": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "kind": "reading-pack-quality-evaluation",
+  "status": "approved",
+  "profile": "nonfiction-reading",
+  "canonical_data_sha256": "3790366b6d35ce183aeed7f978d56276446ecfb6edac33b9bae39f4bc5b58583",
+  "quality_contract_sha256": "7d13f265de574784b0c8e9b556eda85ce6bd3b20716c508fc6dfe57f57a94be0",
+  "method": "Direct bilingual comparison of the synthetic manuscript chapter and section inventory against canonical records",
+  "reviewer": "Synthetic example authority",
+  "reviewed_at": "2026-08-13",
+  "counts": {
+    "expected_structure_records": 10,
+    "observed_structure_records": 10,
+    "matched_structure_records": 10,
+    "source_attribution_errors": [],
+    "invented_record_ids": []
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/semantic-findings.schema.json",
+  "title": "Reading Pack excerpt-free semantic findings input",
+  "description": "Machine/manual semantic flags using only artifact identifiers and reason codes; source prose is not accepted.",
+  "type": "object",
+  "required": ["schema_version", "plan_id", "run_id", "assessment", "findings"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^WP-[A-F0-9]{20}$"},
+    "run_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "assessment": {"$ref": "#/$defs/assessment"},
+    "findings": {
+      "type": "array",
+      "maxItems": 20000,
+      "items": {"$ref": "#/$defs/finding"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "assessment": {
+      "type": "object",
+      "required": ["status", "assessor", "assessed_candidate_ids"],
+      "properties": {
+        "status": {"enum": ["partial", "complete"]},
+        "assessor": {"type": "string", "minLength": 1, "maxLength": 500},
+        "assessed_candidate_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "category": {
+      "enum": [
+        "unsupported",
+        "overstated",
+        "missing_qualifier",
+        "misattributed",
+        "contradictory",
+        "non_atomic",
+        "duplicate",
+        "other"
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "work_id",
+        "candidate_id",
+        "category",
+        "severity",
+        "reason_code",
+        "evidence_ref_ids"
+      ],
+      "properties": {
+        "work_id": {"type": "string", "pattern": "^WORK-[A-F0-9]{20}$"},
+        "candidate_id": {"type": "string", "pattern": "^CAND-[A-F0-9]{20}$"},
+        "category": {"$ref": "#/$defs/category"},
+        "severity": {"enum": ["warning", "error"]},
+        "reason_code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,99}$"
+        },
+        "evidence_ref_ids": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^EV-[A-F0-9]{16}$"}
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

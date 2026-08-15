@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/language-pack.schema.json",
+  "title": "Reading Pack canonical language data",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "language",
+    "source",
+    "book",
+    "chapters",
+    "certainty",
+    "claims",
+    "misreadings",
+    "names",
+    "glossary",
+    "references"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "language": {"enum": ["ja", "en"]},
+    "source": {
+      "type": "object",
+      "required": ["format", "name", "sha256"],
+      "properties": {
+        "format": {"enum": ["none", "markdown", "org", "epub3", "pdf", "pdf-vertical", "text"]},
+        "name": {"type": "string"},
+        "sha256": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "book": {
+      "type": "object",
+      "required": ["title", "author"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "author": {"type": "string", "minLength": 1},
+        "display_author": {"type": "string", "minLength": 1, "maxLength": 500},
+        "publisher": {"type": "string", "minLength": 1, "maxLength": 500},
+        "publication_date": {"type": "string", "minLength": 1, "maxLength": 100},
+        "isbn": {"type": "string", "minLength": 1, "maxLength": 100},
+        "official_url": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "contents_note": {"type": "string", "minLength": 1, "maxLength": 1000}
+      },
+      "additionalProperties": false
+    },
+    "chapters": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/chapter"}},
+    "certainty": {"type": "array", "items": {"$ref": "#/$defs/certainty"}},
+    "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}},
+    "misreadings": {"type": "array", "items": {"$ref": "#/$defs/misreading"}},
+    "policies": {"type": "array", "items": {"$ref": "#/$defs/policy"}},
+    "names": {"type": "array", "items": {"$ref": "#/$defs/name"}},
+    "glossary": {"type": "array", "items": {"$ref": "#/$defs/term"}},
+    "references": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/reference"},
+      "contains": {
+        "type": "object",
+        "required": ["relation"],
+        "properties": {"relation": {"const": "official_companion"}}
+      },
+      "minContains": 0,
+      "maxContains": 32
+    }
+  },
+  "$defs": {
+    "reviewState": {"enum": ["draft", "reviewed", "approved"]},
+    "translation": {
+      "properties": {
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "translation_status": {"enum": ["draft", "reviewed", "approved"]}
+      }
+    },
+    "supportProvenance": {
+      "dependentRequired": {
+        "provenance_source_id": ["provenance_source_hash"],
+        "provenance_source_hash": ["provenance_source_id"]
+      }
+    },
+    "chapter": {
+      "type": "object",
+      "required": ["id", "title", "sections", "summary", "terms", "status"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^CH-[A-Z0-9][A-Z0-9.-]*$"},
+        "kind": {
+          "enum": [
+            "frontmatter", "part", "chapter", "afterword", "appendix",
+            "notes", "bibliography", "glossary", "index", "colophon", "unknown"
+          ]
+        },
+        "title": {"type": "string", "minLength": 1},
+        "pages": {"type": "string"},
+        "sections": {"type": "array", "items": {"type": "string"}},
+        "summary": {"type": "string"},
+        "terms": {"type": "array", "items": {"type": "string"}},
+        "contributors": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 200},
+          "uniqueItems": true
+        },
+        "aliases": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 200},
+          "uniqueItems": true
+        },
+        "learning_objectives": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 500}
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 500}
+        },
+        "spoiler_scope": {
+          "enum": ["none", "chapter_only", "labeled_spoilers", "full_book"]
+        },
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "additionalProperties": false
+    },
+    "certainty": {
+      "type": "object",
+      "required": ["id", "label", "definition", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string", "minLength": 1},
+        "definition": {"type": "string", "minLength": 1},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "additionalProperties": false
+    },
+    "claim": {
+      "type": "object",
+      "required": ["id", "layer", "kind", "statement", "chapter_ids", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "layer": {"enum": ["descriptive", "normative"]},
+        "kind": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "chapter_ids": {"type": "array", "items": {"type": "string"}},
+        "certainty_id": {"type": "string"},
+        "falsifiability": {"type": "string"},
+        "revision_conditions": {"type": "string"},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "reader_note": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "additionalProperties": false
+    },
+    "misreading": {
+      "type": "object",
+      "required": ["id", "response", "chapter_ids", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "kind": {
+          "enum": ["misreading", "clarification", "open_objection", "author_update"]
+        },
+        "issue": {"type": "string", "minLength": 1},
+        "misreading": {"type": "string", "minLength": 1},
+        "response": {"type": "string", "minLength": 1},
+        "impact": {"type": "string", "minLength": 1},
+        "remaining_uncertainty": {"type": "string", "minLength": 1},
+        "chapter_ids": {"type": "array", "items": {"type": "string"}},
+        "claim_ids": {"type": "array", "items": {"type": "string"}},
+        "anchor": {"type": "string", "minLength": 1, "maxLength": 500},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [
+        {"$ref": "#/$defs/supportProvenance"},
+        {
+          "oneOf": [
+            {"required": ["issue"], "not": {"required": ["misreading"]}},
+            {"required": ["misreading"], "not": {"required": ["issue"]}}
+          ]
+        }
+      ],
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["id", "kind", "statement", "status"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^POLICY-[A-Z0-9][A-Z0-9.-]*$"},
+        "kind": {
+          "enum": [
+            "authority_order", "language_precedence", "translation_rights",
+            "retrieval", "publisher_relation", "usage_terms", "other"
+          ]
+        },
+        "statement": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "additionalProperties": false
+    },
+    "name": {
+      "type": "object",
+      "required": ["id", "name", "chapter_id", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string", "minLength": 1},
+        "aliases": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 200},
+          "uniqueItems": true
+        },
+        "chapter_id": {"type": "string"},
+        "book_context": {"type": "string", "minLength": 1, "maxLength": 500},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "additionalProperties": false
+    },
+    "term": {
+      "type": "object",
+      "required": ["id", "term", "chapter_id", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "term": {"type": "string", "minLength": 1},
+        "aliases": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 200},
+          "uniqueItems": true
+        },
+        "chapter_id": {"type": "string"},
+        "book_meaning": {"type": "string", "minLength": 1, "maxLength": 500},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "additionalProperties": false
+    },
+    "reference": {
+      "type": "object",
+      "required": ["id", "url", "label", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "url": {"type": "string", "format": "uri"},
+        "label": {"type": "string", "minLength": 1},
+        "relation": {"const": "official_companion"},
+        "url_scope": {"enum": ["exact", "prefix"]},
+        "retrieval_policy": {"const": "proactive_when_relevant"},
+        "source_locations": {"$ref": "#/$defs/sourceLocations"},
+        "status": {"$ref": "#/$defs/reviewState"},
+        "source_id": {"type": "string"},
+        "source_hash": {"type": "string"},
+        "translation_status": {"$ref": "#/$defs/reviewState"},
+        "provenance_source_id": {"type": "string", "pattern": "^SRC-[A-Z0-9][A-Z0-9.-]{0,99}$"},
+        "provenance_source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [{"$ref": "#/$defs/supportProvenance"}],
+      "dependentRequired": {
+        "relation": ["url_scope", "retrieval_policy"],
+        "url_scope": ["relation", "retrieval_policy"],
+        "retrieval_policy": ["relation", "url_scope"]
+      },
+      "additionalProperties": false
+    },
+    "sourceLocations": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {"type": "string", "minLength": 1, "maxLength": 500},
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}
