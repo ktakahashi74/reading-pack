@@ -2,6 +2,12 @@
 venv/
 .reading-pack-site/
 .reading-pack/
+.agent-shell/
+.agents/
+.codex/
+.env
+.env.*
+!.env.example
 __pycache__/
 *.py[cod]
 *.egg-info/

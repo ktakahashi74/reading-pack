@@ -408,6 +408,7 @@ def build_author_review_session(
         "created_at": manifest["created_at"],
         "slug": config["slug"],
         "version": config["version"],
+        "status": config["status"],
         "book": {
             "title": config["book"]["title"],
             "author": config["book"]["author"],
@@ -420,6 +421,7 @@ def build_author_review_session(
         "record_ids": deepcopy(scoped_record_ids),
         "canonical_data_sha256": manifest["snapshot"]["canonical_data_sha256"],
         "workflow": deepcopy(config["workflow"]),
+        "release_signoff": manifest.get("release_signoff", False),
         "groups": groups,
         "records": records,
         "questions": questions,

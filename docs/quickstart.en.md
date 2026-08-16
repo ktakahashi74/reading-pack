@@ -94,12 +94,12 @@ cmp /tmp/first-pack.md demo/dist/reading-pack.en.md
 
 ## 6. Complete release gates
 
-Confirm rights and conduct author, publisher, non-reconstruction, and publication reviews. Set approved records to `approved`; update `[workflow]` in `reading-pack.toml`; then name the human authority and approve the critical policies in `quality-plan.json`. When replacing an existing pack, bind the `reading-pack measure --json` metrics and comparison-artifact hash under `content_floor`. Record measured structure precision/recall, invented records, and attribution errors together with a retained evaluation evidence path and hash, all bound to the current canonical-data hash. Use `publisher_review = "not_required"` only when a human has established that no publisher approval is needed.
+Confirm rights and conduct author, publisher, non-reconstruction, and publication review. Once measured evaluation and retained evidence are ready, the release-signoff form can update approved records, `[workflow]`, accountable quality authority, and critical policies atomically from one human signature. When replacing an existing pack, bind the `reading-pack measure --json` metrics and comparison-artifact hash under `content_floor`. Record measured structure precision/recall, invented records, and attribution errors together with a retained evaluation evidence path and hash, all bound to the current canonical-data hash. Use `publisher_review = "not_required"` only when a human has established that no publisher approval is needed.
 
 Use one human-readable Markdown review bound to the current canonical state. An agent may inspect everything, explain exceptions and owner judgments, and help fill the form. The edited Markdown itself records the human's decisions and correction instructions.
 
 ```sh
-reading-pack review export --project demo --output author-review
+reading-pack review export --project demo --release-signoff --output author-review
 # Read author-review.review.md; optionally ask an agent to explain and fill it.
 reading-pack review status /path/to/author-review.review.md \
   --evidence demo/.reading-pack/reviews/author-review --project demo
@@ -111,7 +111,7 @@ reading-pack review apply /tmp/author-review-plan.json \
   --evidence demo/.reading-pack/reviews/author-review --project demo
 ```
 
-See [Author review](author-review.en.md) for human editing, agent assistance, and correction instructions.
+With no exception, the human inspects the agent's explanation and gives one final approval instruction. If a correction is needed, apply it with a focused form and export a fresh release-signoff form after reevaluation. See [Author review](author-review.en.md) for human editing, agent assistance, and correction instructions.
 
 ```sh
 reading-pack check --project demo --lang en --release

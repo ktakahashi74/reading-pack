@@ -12,6 +12,17 @@ reading-pack review export \
   --output author-review
 ```
 
+通常の公開前レビューでは、`--release-signoff`を付ける。内容、権利、出版社確認、再構築不能性、品質責任者、版、公開判断を同じ用紙に列挙し、一回の署名で一括適用できる。
+
+```sh
+reading-pack review export \
+  --project ./my-pack \
+  --release-signoff \
+  --output final-review
+```
+
+測定結果、評価証拠、hash、Schemaは署名の対象に混ぜず、自動検査の前提とする。出版社確認が未決なら、用紙内で`approved`か`not_required`を一度だけ明示する。修正や例外がなければ、人間が行う指示はこの最終署名の一回で済む。先に修正判断が必要な場合だけ限定用紙を一回使い、再評価後に最終署名する。
+
 本書固有方針だけを先に確認する場合は、同じ経路をmodule限定で使う。
 
 ```sh
@@ -71,7 +82,7 @@ reading-pack review export \
 4. 著者から明示的に頼まれた場合だけ、回答欄を編集する。
 5. 編集後ファイルを著者へ見せ、確認を求める。
 
-エージェントは、推奨だけを理由にチェックを入れない。`submitted`と`final_signoff`は、このファイルを自分の判断として提出すると著者が明示した場合だけ記入する。
+エージェントは、推奨だけを理由にチェックを入れない。`submitted`と`final_signoff`は、このファイルを自分の判断として提出すると著者が明示した場合だけ記入する。`release_approve`も、列挙された公開判断を一括承認すると人間が明示した場合だけ記入する。例外がなければ、一回の明示指示で三つを同時に記入してよい。
 
 ## 4. 修正指示を書く
 
@@ -99,6 +110,8 @@ reading-pack review export \
 - `submitted`: この編集後ファイルを自分の判断として提出する
 - `final_signoff`: 全レコードと必須方針の最終承認
 
+`--release-signoff`付き用紙では、さらに`release_approve`または`release_hold`を選ぶ。公開承認には`submitted`と`final_signoff`も必要である。
+
 途中結果や修正指示だけを提出する場合も`submitted`は必要である。record限定用紙とmodule限定用紙は全体の`final_signoff`を与えない。完全な用紙での`final_signoff`は、全レコードが`approve`、`revise_approve`または`exclude`で、必須方針が`accept`となり、未承認の修正、保留、未判断がない場合だけ有効になる。
 
 見出し、説明、項目一覧、プレビュー、HTMLコメント、回答枠の境界を変えると、保護ハッシュの検査に失敗する。これにより、編集後ファイルがどの対象へ回答したものかを固定する。
@@ -123,6 +136,6 @@ reading-pack review apply ./author-review-plan.json \
 
 根拠群の判断は、計画作成前に全レコードの明示判断へ展開される。計画と履歴には、一件ごとのID、判断、before/after hashが残る。正本、設定、品質計画、template、AIP台帳、レビュー状態のいずれかが変われば、古い用紙は拒否される。
 
-著者レビューが最終署名まで成立すると、`reading-pack.toml.workflow.author_review`だけが`approved`になる。権利許諾、出版社確認、再構築不能性の責任者判断、実モデル評価、品質責任者、公開判断は別のrelease gateとして残る。
+通常の用紙で最終署名すると、`reading-pack.toml.workflow.author_review`だけが`approved`になる。`--release-signoff`付き用紙で公開承認した場合は、列挙されたworkflow gateと品質責任者判断も、同じ回復可能なtransactionで適用する。現在の評価証拠が欠ける、実測値が下限を満たさない、hashが古い、出版社判断がない、またはrelease checkに失敗する場合は一件も適用しない。
 
 Copyright 2026 Koichi Takahashi / 高橋恒一. CC BY 4.0.

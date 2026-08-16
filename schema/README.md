@@ -22,9 +22,9 @@ The schemas define three boundaries: canonical project data, body-free planning 
 | `author-input-module.schema.json` | JSON records supplied through an Author Input Package, including closed policy, neutral reading issues, and record locators. |
 | `author-input-plan.schema.json` | A body-free, stale-checked plan for applying one or more packages. |
 | `author-input-state.schema.json` | Canonical provenance and history for applied packages. |
-| `author-review-manifest.schema.json` | Body-free record and project-state hashes used to validate one human-edited Markdown review. |
-| `author-review-plan.schema.json` | Body-free, stale-checked author decisions and prospective canonical hashes. |
-| `author-review-state.schema.json` | Body-free history that overlays explicit author corrections on AIP provenance. |
+| `author-review-manifest.schema.json` | Body-free record and project-state hashes used to validate one human-edited Markdown review, optionally including aggregate release signoff. |
+| `author-review-plan.schema.json` | Body-free, stale-checked author decisions, prospective canonical hashes, and optional release/quality bindings. |
+| `author-review-state.schema.json` | Body-free history that overlays explicit author corrections on AIP provenance and records any aggregate release decision. |
 
 These 29 files are the sole structural source of truth. The command-line tool loads them with `jsonschema.Draft202012Validator` and consumes every result from `iter_errors()` through one deterministic error adapter. It separately performs semantic checks that JSON Schema cannot express conveniently: globally unique IDs, valid references, safe URL policy, bounded and deduplicated official-companion targets, bilingual parity, source and canonical-state hashes, provenance and work-to-candidate binding, applied-run continuity, finding-to-evidence binding, state transitions, named reviewer decisions, and human publication gates.
 

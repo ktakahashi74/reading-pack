@@ -12,6 +12,17 @@ reading-pack review export \
   --output author-review
 ```
 
+For the ordinary pre-publication review, add `--release-signoff`. The same form enumerates content, rights, publisher disposition, non-reconstruction, quality authority, edition identity, and publication so one human signature can apply them together.
+
+```sh
+reading-pack review export \
+  --project ./my-pack \
+  --release-signoff \
+  --output final-review
+```
+
+Measured results, retained evaluation evidence, hashes, and schemas remain machine-checked prerequisites, not extra approval prompts. If publisher review is unresolved, the form asks once for `approved` or `not_required`. With no correction or exception, the human gives one final instruction. A genuine exception uses one focused review first and a fresh final signoff after reevaluation.
+
 Use the same path with a module scope when book-specific policy must be decided before the complete review:
 
 ```sh
@@ -71,7 +82,7 @@ Give the form to an agent and ask it to inspect everything and explain only exce
 4. edit response regions only after an explicit human request;
 5. return the edited file for human inspection.
 
-The agent cannot select a choice merely because it recommended it. It may check `submitted` or `final_signoff` only after the human explicitly says the file represents their decisions.
+The agent cannot select a choice merely because it recommended it. It may check `submitted` or `final_signoff` only after the human explicitly says the file represents their decisions. It may check `release_approve` only after the human explicitly approves the listed release decisions; with no exception, one instruction may fill all three choices.
 
 ## 4. Correction instructions
 
@@ -99,6 +110,8 @@ Complete:
 - `submitted`, attesting that the edited file records the human's decisions;
 - `final_signoff`, only for a complete final approval.
 
+A form exported with `--release-signoff` also selects `release_approve` or `release_hold`. Publication approval requires both `submitted` and `final_signoff`.
+
 Partial decisions and correction instructions still require `submitted`. Record- and module-scoped forms cannot grant whole-pack final signoff. In a complete form, final signoff requires every record to resolve to `approve`, `revise_approve`, or `exclude`, every required policy to resolve to `accept`, and no unapproved revision, hold, or pending decision.
 
 Changing headings, explanations, item lists, previews, HTML comments, or response boundaries invalidates the protected-content hash. This binds the edited answers to the exact review target.
@@ -123,6 +136,6 @@ reading-pack review apply ./author-review-plan.json \
 
 Group decisions expand to explicit per-record decisions before planning. The body-free plan and ledger retain each record ID, decision, and before/after hash. Any intervening change to canonical content, configuration, quality plan, templates, AIP state, or review state makes the form stale.
 
-Successful final signoff changes only `reading-pack.toml.workflow.author_review` to `approved`. Rights, publisher review, accountable non-reconstruction review, measured model evaluation, quality authority, and publication remain separate release gates.
+Final signoff in an ordinary form changes only `reading-pack.toml.workflow.author_review` to `approved`. Publication approval in a `--release-signoff` form applies the enumerated workflow gates and accountable quality-authority decision in the same recoverable transaction. Nothing is applied if current evaluation evidence is absent, measured thresholds fail, a hash is stale, publisher disposition is unresolved, or release validation fails.
 
 Copyright 2026 Koichi Takahashi / 高橋恒一. CC BY 4.0.

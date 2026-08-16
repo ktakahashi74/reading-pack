@@ -51,6 +51,14 @@ def register(
         "--created-at", metavar="YYYY-MM-DD", help=argparse.SUPPRESS
     )
     review_export.add_argument(
+        "--release-signoff",
+        action="store_true",
+        help=(
+            "include one final publication decision that can approve all "
+            "release gates transactionally"
+        ),
+    )
+    review_export.add_argument(
         "--module",
         action="append",
         choices=REVIEW_MODULES,
@@ -179,6 +187,7 @@ def command_review(args: argparse.Namespace) -> int:
             modules=(tuple(args.modules) if args.modules else None),
             record_ids=record_ids,
             suggestions=suggestions,
+            release_signoff=args.release_signoff,
         )
         print(
             f"created human-editable author review {review_file} "
@@ -203,6 +212,7 @@ def command_review(args: argparse.Namespace) -> int:
                 f"pending={summary['pending']} "
                 f"submitted={str(status['submitted']).lower()} "
                 f"final_signoff={str(status['final_signoff']).lower()}"
+                f" release={status['release_decision'] or 'none'}"
             )
         return EXIT_OK
     if args.review_command == "plan":
@@ -217,6 +227,7 @@ def command_review(args: argparse.Namespace) -> int:
             f"plan={plan['plan_id']} approve={summary['approve']} "
             f"revise={summary['revise']} exclude={summary['exclude']} "
             f"final_signoff={str(plan['final_signoff']).lower()}"
+            f" release={plan.get('release', {}).get('decision', 'none')}"
         )
         return EXIT_OK
     if args.review_command == "apply":
@@ -233,6 +244,7 @@ def command_review(args: argparse.Namespace) -> int:
             f"plan={result['plan_id']} approve={summary['approve']} "
             f"revise={summary['revise']} exclude={summary['exclude']} "
             f"final_signoff={str(result['final_signoff']).lower()}; "
+            f"release={result.get('release_decision') or 'none'}; "
             "revise stays draft; signed revise_approve is counted as approve"
         )
         return EXIT_OK

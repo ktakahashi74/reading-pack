@@ -161,6 +161,10 @@ def _labels(primary_language: str) -> dict[str, str]:
             "needs_work": "要対応",
             "submitted": "この編集後ファイルを自分の判断として提出する",
             "final_signoff": "全レコードと必須方針を最終承認する",
+            "release_approve": "この版の公開を一括承認する",
+            "release_hold": "公開を保留する",
+            "publisher_approved": "出版社確認済み",
+            "publisher_not_required": "出版社確認は不要",
         }
     return {
         "approve": "Approve",
@@ -171,6 +175,10 @@ def _labels(primary_language: str) -> dict[str, str]:
         "needs_work": "Needs work",
         "submitted": "Submit this edited file as my decisions",
         "final_signoff": "Give final signoff to every record and required policy",
+        "release_approve": "Approve publication of this edition in one step",
+        "release_hold": "Hold publication",
+        "publisher_approved": "Publisher review completed",
+        "publisher_not_required": "Publisher review not required",
     }
 
 
@@ -307,6 +315,7 @@ def _agent_instructions(primary_language: str) -> str:
 - 推奨だけを理由にチェックを入れない。どの判断を記入するか、人間の明示的な指示を得る。
 - 候補runから事前記入された`revise_approve`は未提出の提案である。人間に正確な変更内容を示し、明示的な承認を得るまで提出しない。
 - `submitted`と`final_signoff`は、とくに人間がこのファイルを自分の判断として提出すると明言した場合だけチェックする。
+- `release_approve`も、人間が列挙された公開判断を一括して承認すると明言した場合だけチェックする。例外がなければ、同じ一回の指示で提出・最終署名・公開承認を記入できる。
 - 修正指示は、下記の個別修正書式へ変換してから、人間に編集後ファイルの確認を求める。推測で原著内容を補わない。
 - 同意の証拠は会話ログやエージェント出力ではなく、確認者、確認日、提出確認を含むこの編集後Markdownである。"""
     return """You assist a human-owned author review. Follow these rules.
@@ -316,6 +325,7 @@ def _agent_instructions(primary_language: str) -> str:
 - Do not check a choice merely because it is recommended. Obtain an explicit human instruction about what to record.
 - A prefilled `revise_approve` imported from a candidate run is an unsubmitted proposal. Show the exact changes and obtain explicit human approval before submission.
 - Check `submitted` or `final_signoff` only when the human explicitly says this file represents their decisions.
+- Check `release_approve` only when the human explicitly approves the listed release decisions. With no exception, the same single instruction may fill submission, final signoff, and release approval.
 - Convert requested corrections into the documented override form, then ask the human to inspect the edited file. Never invent source content.
 - The edited Markdown with reviewer, date, and submission attestation—not the chat or agent output—is the consent evidence."""
 
@@ -478,6 +488,56 @@ def render_assisted_author_review(session: Mapping[str, Any]) -> str:
         f"- {copy['reviewed_at_label']}: \n"
         + _choice_lines(("submitted", "final_signoff"), labels)
     )
+    release_section = ""
+    if session.get("release_signoff"):
+        publisher_state = session["workflow"].get("publisher_review")
+        if publisher_state in {"approved", "not_required"}:
+            publisher_text = (
+                f"- 出版社確認: `{publisher_state}`（既存の確認結果を維持）"
+                if session["primary_language"] == "ja"
+                else f"- Publisher review: `{publisher_state}` (preserve the existing decision)"
+            )
+        else:
+            publisher_text = _response(
+                "PUBLISHER",
+                "final",
+                _choice_lines(
+                    ("publisher_approved", "publisher_not_required"), labels
+                ),
+            )
+        release_body = _choice_lines(("release_approve", "release_hold"), labels)
+        if session["primary_language"] == "ja":
+            release_section = f"""## 公開判断
+
+ここで「この版の公開を一括承認する」を選ぶと、同じ署名により次を確定します。
+
+- 設計制約、権利・利用条件、再構築不能性を承認する
+- 品質計画の必須方針と品質責任者判断を承認する
+- 著者レビューと出版社確認を下記の状態で確定する
+- `{session['slug']}` / `{session['version']}` / `{session['status']}` の公開を承認する
+
+測定結果、hash、Schema、状態遷移などの機械検査は、署名とは別に自動実行されます。不合格なら一件も適用しません。
+
+{publisher_text}
+
+{_response('RELEASE', 'final', release_body)}
+"""
+        else:
+            release_section = f"""## Publication decision
+
+Selecting “Approve publication of this edition in one step” records all of the following under the same signature.
+
+- Approve design constraints, rights and terms, and non-reconstruction
+- Approve the required quality policies and accountable quality authority
+- Finalize author review and publisher review in the state shown below
+- Approve publication of `{session['slug']}` / `{session['version']}` / `{session['status']}`
+
+Machine checks for measured results, hashes, schemas, and state transitions run separately. If any check fails, nothing is applied.
+
+{publisher_text}
+
+{_response('RELEASE', 'final', release_body)}
+"""
     owner_questions = [
         question for question in session["questions"]
         if question["requires_user_judgment"]
@@ -542,7 +602,11 @@ def render_assisted_author_review(session: Mapping[str, Any]) -> str:
         override_empty = "なし"
         override_details = "修正欄の書式を見る"
         signoff_intro = "確認者と確認日を記入し、「この編集後ファイルを自分の判断として提出する」にチェックしてください。すべてを最終承認できる場合だけ、最後の項目にもチェックします。"
-        gate_disclaimer = "著者レビューは、権利許諾、出版社確認、再構築不能性の責任者判断、実モデル評価、品質責任者、公開判断を承認しません。"
+        gate_disclaimer = (
+            "この公開判断付き用紙では、上の公開承認を選んだ場合に限り、列挙した公開条件も同じ署名で承認します。"
+            if session.get("release_signoff")
+            else "著者レビューは、権利許諾、出版社確認、再構築不能性の責任者判断、実モデル評価、品質責任者、公開判断を承認しません。"
+        )
         scope_details = "対象版と件数を確認する"
         edit_heading = "編集時の注意"
         edit_note = "チェック欄、コメント欄、個別修正欄、提出欄だけを編集してください。その他の表示を変更すると、対象との対応を確認できなくなり、提出時の検査で拒否されます。エージェントに記入を頼む場合も、最後は人間が編集後の内容を確認します。"
@@ -575,7 +639,11 @@ Replacement content. For a list field, put one item on each line.
         override_empty = "none"
         override_details = "Show the correction format"
         signoff_intro = "Enter the reviewer and review date, then check “Submit this edited file as my decisions.” Check the final item only when the entire review is ready for final approval."
-        gate_disclaimer = "Author review does not approve rights, publisher review, accountable non-reconstruction review, measured model evaluation, quality authority, or publication."
+        gate_disclaimer = (
+            "In this release-signoff form, selecting publication approval also approves the listed release gates under the same signature."
+            if session.get("release_signoff")
+            else "Author review does not approve rights, publisher review, accountable non-reconstruction review, measured model evaluation, quality authority, or publication."
+        )
         scope_details = "Show the reviewed edition and counts"
         edit_heading = "Editing note"
         edit_note = "Edit only checkboxes, comment fields, the individual-corrections area, and the submission fields. Changing other displayed content breaks the binding to the review target and is rejected during submission validation. When an agent helps fill the form, the human still inspects the edited result before submission."
@@ -627,6 +695,8 @@ Replacement content. For a list field, put one item on each line.
 <!-- RP_OVERRIDES_END -->
 
 {preview_section}
+
+{release_section}
 
 ## {copy['signoff_heading']}
 
@@ -765,6 +835,7 @@ def export_assisted_author_review(
     modules: tuple[str, ...] | None = None,
     record_ids: tuple[str, ...] | None = None,
     suggestions: Sequence[Mapping[str, Any]] = (),
+    release_signoff: bool = False,
 ) -> tuple[Path, Path]:
     project = Path(project).resolve()
     prospective_directory = _evidence_directory(project, output)
@@ -779,6 +850,7 @@ def export_assisted_author_review(
         created_at=created_at or date.today().isoformat(),
         modules=modules,
         record_ids=record_ids,
+        release_signoff=release_signoff,
     )
     session = build_author_review_session(project, review_directory)
     text = render_assisted_author_review(session)
@@ -1014,6 +1086,60 @@ def load_assisted_author_review(
         raise ReadingPackError(
             "assisted review final_signoff requires submitted"
         )
+    release: dict[str, Any] | None = None
+    if session.get("release_signoff"):
+        release_key = ("RELEASE", "final")
+        expected_keys.add(release_key)
+        release_choice, _ = _parse_choices(
+            responses.get(release_key, ""),
+            ("release_approve", "release_hold"),
+            "release signoff",
+        )
+        publisher_state = session["workflow"].get("publisher_review")
+        if publisher_state not in {"approved", "not_required"}:
+            publisher_key = ("PUBLISHER", "final")
+            expected_keys.add(publisher_key)
+            publisher_choice, _ = _parse_choices(
+                responses.get(publisher_key, ""),
+                ("publisher_approved", "publisher_not_required"),
+                "publisher review",
+            )
+            publisher_state = {
+                "publisher_approved": "approved",
+                "publisher_not_required": "not_required",
+                None: None,
+            }[publisher_choice]
+        release = {
+            "decision": {
+                "release_approve": "approve",
+                "release_hold": "hold",
+                None: None,
+            }[release_choice],
+            "publisher_review": publisher_state,
+        }
+        if release["decision"] == "approve":
+            if not signoff["submitted"] or not signoff["final_signoff"]:
+                raise ReadingPackError(
+                    "release approval requires submitted and final_signoff"
+                )
+            if release["publisher_review"] not in {"approved", "not_required"}:
+                raise ReadingPackError(
+                    "release approval requires a publisher review decision"
+                )
+            answered = {
+                item["question_id"]: item["answer"]
+                for item in question_answers
+            }
+            missing = [
+                question["question_id"]
+                for question in session["questions"]
+                if answered.get(question["question_id"]) != "accept"
+            ]
+            if missing:
+                raise ReadingPackError(
+                    "release approval requires acceptance of every publication "
+                    "question: " + ", ".join(missing)
+                )
     if set(responses) != expected_keys:
         raise ReadingPackError("assisted review response regions do not match the session")
     overrides_match = OVERRIDES_RE.search(text)
@@ -1039,6 +1165,7 @@ def load_assisted_author_review(
         "session": session,
         "result": result,
         "submitted": signoff["submitted"],
+        "release": release,
     }
 
 
@@ -1066,6 +1193,9 @@ def assisted_author_review_status(
         "reviewed_at": result["reviewed_at"],
         "submitted": loaded["submitted"],
         "final_signoff": result["final_signoff"],
+        "release_decision": (
+            loaded["release"]["decision"] if loaded["release"] else None
+        ),
         "summary": summary,
         "meaningful_decisions": (
             len(result["group_decisions"])
@@ -1080,7 +1210,10 @@ def assisted_author_review_status(
 
 def _build_assisted_author_review_plan(
     project: Path, review_directory: Path, review_path: Path
-) -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any], str]:
+) -> tuple[
+    dict[str, Any], dict[str, dict[str, Any]], dict[str, Any], str,
+    dict[str, Any] | None,
+]:
     project = Path(project).resolve()
     _, manifest = _load_review_evidence(project, review_directory)
     loaded = load_assisted_author_review(project, review_directory, review_path)
@@ -1095,13 +1228,15 @@ def _build_assisted_author_review_plan(
         *parsed["attestations"],
         {"question_id": "human-edited-review-submitted", "answer": "accept"},
     ]
+    if loaded["release"] is not None:
+        parsed["release"] = deepcopy(loaded["release"])
     return _build_author_review_plan_from_parsed(project, manifest, parsed)
 
 
 def create_assisted_author_review_plan(
     project: Path, review_directory: Path, review_path: Path
 ) -> dict[str, Any]:
-    plan, _, _, _ = _build_assisted_author_review_plan(
+    plan, _, _, _, _ = _build_assisted_author_review_plan(
         Path(project).resolve(), review_directory, review_path
     )
     return validate_author_review_plan(plan)

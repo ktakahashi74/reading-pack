@@ -205,6 +205,45 @@ class AssistedAuthorReviewTests(unittest.TestCase):
                 text = _select(text, "QUESTION", question["question_id"], "accept")
         return _sign(text, submitted=True, final_signoff=True)
 
+    def _release_project(self, name: str) -> Path:
+        project = copy_sample(self.root / name)
+        config_path = project / "reading-pack.toml"
+        config = config_path.read_text(encoding="utf-8")
+        for field in (
+            "design_constraints", "rights_review", "author_review",
+            "publisher_review", "reconstruction_review", "publication_decision",
+        ):
+            config = re.sub(
+                rf'^{field} = "[^"]+"$', f'{field} = "pending"',
+                config, count=1, flags=re.MULTILINE,
+            )
+        config_path.write_text(config, encoding="utf-8")
+        quality_path = project / "quality-plan.json"
+        quality = read_json(quality_path)
+        quality["authority"].update({
+            "reviewers": [],
+            "status": "pending",
+            "canonical_data_sha256": "",
+            "quality_contract_sha256": "",
+        })
+        quality["critical_policies"] = {
+            name: "pending" for name in quality["critical_policies"]
+        }
+        write_json(quality_path, quality)
+        return project
+
+    def _complete_release_text(
+        self, review_file: Path, session: dict, *, publisher: str = "not_required"
+    ) -> str:
+        text = self._complete_text(review_file, session)
+        for question in session["questions"]:
+            if not question["required_for_signoff"]:
+                text = _select(
+                    text, "QUESTION", question["question_id"], "accept"
+                )
+        text = _select(text, "PUBLISHER", "final", f"publisher_{publisher}")
+        return _select(text, "RELEASE", "final", "release_approve")
+
     def test_export_is_human_facing_editable_markdown_with_embedded_agent_help(self) -> None:
         review_file, evidence, _ = self._export()
         text = review_file.read_text(encoding="utf-8")
@@ -691,6 +730,84 @@ The revised book-specific context.
         )
         self.assertEqual(applied.returncode, 0, applied.stderr)
         self.assertIn("approve=2", applied.stdout)
+
+    def test_one_signed_markdown_approves_all_release_gates_transactionally(self) -> None:
+        project = self._release_project("one-shot-release")
+        review_file, evidence = export_assisted_author_review(
+            project,
+            Path("release"),
+            created_at="2026-08-15",
+            release_signoff=True,
+        )
+        session = build_author_review_session(project, evidence)
+        text = review_file.read_text(encoding="utf-8")
+        self.assertIn("## 公開判断", text)
+        self.assertIn("同じ署名", text)
+        self.assertIn("RP_RESPONSE_START RELEASE final", text)
+        review_file.write_text(
+            self._complete_release_text(review_file, session), encoding="utf-8"
+        )
+
+        status = assisted_author_review_status(project, evidence, review_file)
+        self.assertEqual(status["release_decision"], "approve")
+        plan = create_assisted_author_review_plan(project, evidence, review_file)
+        self.assertEqual(plan["release"]["publisher_review"], "not_required")
+        result = apply_assisted_author_review_plan(
+            project, plan, evidence, review_file
+        )
+        self.assertEqual(result["release_decision"], "approve")
+
+        config_text = (project / "reading-pack.toml").read_text(encoding="utf-8")
+        for field in (
+            "design_constraints", "rights_review", "author_review",
+            "reconstruction_review", "publication_decision",
+        ):
+            self.assertIn(f'{field} = "approved"', config_text)
+        self.assertIn('publisher_review = "not_required"', config_text)
+        quality = read_json(project / "quality-plan.json")
+        self.assertEqual(quality["authority"]["status"], "approved")
+        self.assertIn("Author", quality["authority"]["reviewers"])
+        self.assertTrue(
+            all(value == "approved" for value in quality["critical_policies"].values())
+        )
+        state = read_json(project / "author-review-state.json")
+        self.assertEqual(state["reviews"][-1]["release"]["decision"], "approve")
+        self.assertEqual(errors(validate_project(project, release=True)[2]), [])
+
+    def test_release_signoff_is_rejected_for_scoped_review(self) -> None:
+        with self.assertRaisesRegex(ReadingPackError, "complete, unscoped"):
+            export_assisted_author_review(
+                self.project,
+                Path("scoped-release"),
+                created_at="2026-08-15",
+                modules=("policy",),
+                release_signoff=True,
+            )
+
+    def test_release_apply_rejects_changed_evaluation_evidence(self) -> None:
+        project = self._release_project("stale-release")
+        review_file, evidence = export_assisted_author_review(
+            project,
+            Path("release"),
+            created_at="2026-08-15",
+            release_signoff=True,
+        )
+        session = build_author_review_session(project, evidence)
+        review_file.write_text(
+            self._complete_release_text(review_file, session), encoding="utf-8"
+        )
+        plan = create_assisted_author_review_plan(project, evidence, review_file)
+        evidence_path = project / plan["release"]["evaluation_evidence"]
+        evidence_value = read_json(evidence_path)
+        evidence_value["method"] += " changed after planning"
+        write_json(evidence_path, evidence_value)
+        with self.assertRaisesRegex(ReadingPackError, "absent or stale"):
+            apply_assisted_author_review_plan(
+                project, plan, evidence, review_file
+            )
+        config_text = (project / "reading-pack.toml").read_text(encoding="utf-8")
+        self.assertIn('publication_decision = "pending"', config_text)
+        self.assertEqual(read_json(project / "quality-plan.json")["authority"]["status"], "pending")
 
 
 if __name__ == "__main__":

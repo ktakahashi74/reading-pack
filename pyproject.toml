@@ -1,21 +1,21 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "reading-pack"
-version = "0.4.0"
+version = "0.5.0"
 description = "Offline-first toolkit for building bilingual Reading Packs for books"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE", "LICENSES/CC-BY-4.0.txt", "LICENSES/README.md"]
 authors = [
   { name = "Koichi Takahashi" },
 ]
 keywords = ["books", "publishing", "reading-pack", "conversational-edition"]
 classifiers = [
   "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -31,13 +31,12 @@ dependencies = [
 reading-pack = "reading_pack.cli:main"
 
 [project.urls]
-Documentation = "https://github.com/koichi-takahashi/reading-pack"
-Source = "https://github.com/koichi-takahashi/reading-pack"
-Issues = "https://github.com/koichi-takahashi/reading-pack/issues"
+Documentation = "https://github.com/ktakahashi74/reading-pack"
+Source = "https://github.com/ktakahashi74/reading-pack"
+Issues = "https://github.com/ktakahashi74/reading-pack/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-license-files = ["LICENSE", "LICENSES/CC-BY-4.0.txt", "LICENSES/README.md"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

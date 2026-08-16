@@ -98,12 +98,12 @@ cmp /tmp/first-pack.md demo/dist/reading-pack.ja.md
 
 ## 6. 公開条件を満たす
 
-公開前には、第一に権利、第二に内容と再構築不能性、第三に公開の可否を人が判断する。公開する各レコードを`approved`へ変更し、`reading-pack.toml`の`[workflow]`を更新する。`quality-plan.json`には責任者の氏名と、すべての必須条件に対する承認を記録する。
+公開前には、第一に権利、第二に内容と再構築不能性、第三に公開の可否を人が判断する。実測評価と証拠を用意したうえで、次の公開判断付きレビューを使えば、各レコード、`[workflow]`、品質責任者、必須方針を一回の署名から原子的に更新できる。
 
 著者の内容確認には、現在の正本に結び付いた一つのMarkdownレビューを使う。エージェントは全件を検査して例外と本人判断事項を説明し、記入を補助できる。編集後Markdownそのものが、人間の判断と修正指示の証拠になる。
 
 ```sh
-reading-pack review export --project demo --output author-review
+reading-pack review export --project demo --release-signoff --output author-review
 # author-review.review.mdを読み、必要ならエージェントに説明と記入を頼む
 reading-pack review status /path/to/author-review.review.md \
   --evidence demo/.reading-pack/reviews/author-review --project demo
@@ -115,7 +115,7 @@ reading-pack review apply /tmp/author-review-plan.json \
   --evidence demo/.reading-pack/reviews/author-review --project demo
 ```
 
-レビュー用紙の編集、エージェントによる補助、修正指示は[著者レビュー](author-review.ja.md)を参照する。
+例外がなければ、人間はエージェントの説明を確認して一回だけ最終承認を指示する。修正が必要なら、限定用紙でその判断を適用し、再評価後に新しい公開判断付き用紙へ署名する。レビュー用紙の編集、エージェントによる補助、修正指示は[著者レビュー](author-review.ja.md)を参照する。
 
 既存パックを置き換える場合は、`reading-pack measure --json`の実測値と比較資料のSHA-256を`content_floor`へ記録する。章構造の適合率と再現率、捏造したレコード数、帰属の誤りも、評価資料のパスとハッシュ、現在の正本データのハッシュへ結び付ける。`publisher_review = "not_required"`は、人が契約と事情を確認して出版社承認が不要と判断した場合に限って使う。
 

@@ -25,6 +25,7 @@
           "canonical_sha256_before": {"$ref": "#/$defs/sha256"},
           "canonical_sha256_after": {"$ref": "#/$defs/sha256"},
           "final_signoff": {"type": "boolean"},
+          "release": {"$ref": "#/$defs/release"},
           "actions": {"type": "array", "maxItems": 100000, "items": {"$ref": "#/$defs/action"}},
           "field_overrides": {"type": "array", "maxItems": 100000, "items": {"$ref": "#/$defs/fieldOverride"}}
         },
@@ -36,6 +37,26 @@
   "$defs": {
     "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
     "nullableSha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+    "release": {
+      "type": "object",
+      "required": [
+        "decision", "publisher_review", "quality_plan_sha256_before",
+        "quality_plan_sha256_after", "evaluation_evidence",
+        "evaluation_evidence_sha256"
+      ],
+      "properties": {
+        "decision": {"const": "approve"},
+        "publisher_review": {"enum": ["approved", "not_required"]},
+        "quality_plan_sha256_before": {"$ref": "#/$defs/sha256"},
+        "quality_plan_sha256_after": {"$ref": "#/$defs/sha256"},
+        "evaluation_evidence": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+\\.json$"
+        },
+        "evaluation_evidence_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "additionalProperties": false
+    },
     "action": {
       "type": "object",
       "required": [

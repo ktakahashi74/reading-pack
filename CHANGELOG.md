@@ -4,6 +4,8 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-08-16
+
 ### Added
 
 - Optional deterministic Agent Skills-compatible directory and ZIP generation from already-built Reading Packs, with read-only checking, byte-identical multilingual references, transactional replacement, release-gate reuse, and bounded path, file-type, size, and archive validation.
@@ -11,6 +13,7 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 - A shared artifact transaction layer for hash-bound, path-restricted, recoverable canonical writes.
 - Record-scoped author-review forms, exact QA-passed candidate-run suggestions, and signed `revise_approve` decisions that can apply and approve one reviewed revision atomically while retaining bilingual parity checks.
 - A guarded `work close` command for recording source-supported zero-result generation items without constructing an external response file or turning execution failure into a content judgment.
+- An optional one-shot release-signoff form that records complete author review, publisher disposition, quality authority, and publication approval under one explicit human signature while retaining hash-bound, transactional validation.
 
 ### Changed
 

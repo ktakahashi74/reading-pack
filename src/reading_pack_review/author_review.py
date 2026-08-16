@@ -25,6 +25,11 @@ from reading_pack.artifact_transaction import (
 )
 from reading_pack.errors import EXIT_IO, ReadingPackError
 from reading_pack.hashing import canonical_data_hash, semantic_hash
+from reading_pack.profiles import (
+    load_quality_plan,
+    quality_contract_hash,
+    validate_quality_plan,
+)
 from reading_pack.project import (
     load_config,
     load_language_data,
@@ -116,6 +121,9 @@ _SAFE_LINE = re.compile(r"[^\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]{1,500}
 _UNIT_ID = re.compile(r"ARU-[0-9]{6}")
 _REVIEW_ID = re.compile(r"AR-[A-F0-9]{20}")
 _PLAN_ID = re.compile(r"ARPLAN-[A-F0-9]{20}")
+_SAFE_EVIDENCE_PATH = re.compile(
+    r"(?!/)(?!.*(?:^|/)\.\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+\.json"
+)
 
 
 def _file_sha256(path: Path) -> str:
@@ -163,6 +171,33 @@ def _require_keys(
         raise ReadingPackError(
             f"invalid {label}: unexpected fields {', '.join(sorted(unexpected))}"
         )
+
+
+def _validate_release_record(value: Any, label: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ReadingPackError(f"invalid {label}: must be an object")
+    fields = {
+        "decision", "publisher_review", "quality_plan_sha256_before",
+        "quality_plan_sha256_after", "evaluation_evidence",
+        "evaluation_evidence_sha256",
+    }
+    _require_keys(value, fields, fields, label)
+    if value["decision"] != "approve":
+        raise ReadingPackError(f"invalid {label}: decision")
+    if value["publisher_review"] not in {"approved", "not_required"}:
+        raise ReadingPackError(f"invalid {label}: publisher_review")
+    for field in (
+        "quality_plan_sha256_before", "quality_plan_sha256_after",
+        "evaluation_evidence_sha256",
+    ):
+        if not isinstance(value[field], str) or not _SHA256.fullmatch(value[field]):
+            raise ReadingPackError(f"invalid {label}: {field}")
+    if (
+        not isinstance(value["evaluation_evidence"], str)
+        or not _SAFE_EVIDENCE_PATH.fullmatch(value["evaluation_evidence"])
+    ):
+        raise ReadingPackError(f"invalid {label}: evaluation_evidence")
+    return deepcopy(dict(value))
 
 
 def _full_state_hash(data_by_lang: Mapping[str, Mapping[str, Any]]) -> str:
@@ -237,7 +272,7 @@ def validate_author_review_state(value: Any) -> dict[str, Any]:
             "canonical_sha256_after", "final_signoff", "actions",
             "field_overrides",
         }
-        _require_keys(review, fields, fields, label)
+        _require_keys(review, fields, fields | {"release"}, label)
         if not isinstance(review["review_id"], str) or not _REVIEW_ID.fullmatch(review["review_id"]):
             raise ReadingPackError(f"invalid {label}: review_id")
         if not isinstance(review["plan_id"], str) or not _PLAN_ID.fullmatch(review["plan_id"]):
@@ -261,6 +296,8 @@ def validate_author_review_state(value: Any) -> dict[str, Any]:
                 raise ReadingPackError(f"invalid {label}: {field}")
         if not isinstance(review["final_signoff"], bool):
             raise ReadingPackError(f"invalid {label}: final_signoff")
+        if "release" in review:
+            _validate_release_record(review["release"], f"{label} release")
         for field, kind in (("actions", "action"), ("field_overrides", "field override")):
             items = review[field]
             if not isinstance(items, list) or len(items) > 100_000:
@@ -430,6 +467,7 @@ def _render_manifest(
     created_at: str,
     modules: tuple[str, ...] | None = None,
     record_ids: tuple[str, ...] | None = None,
+    release_signoff: bool = False,
 ) -> dict[str, Any]:
     try:
         date.fromisoformat(created_at)
@@ -450,6 +488,12 @@ def _render_manifest(
         ):
             raise ReadingPackError("author review record IDs are invalid")
         record_ids = tuple(sorted(record_ids))
+    if not isinstance(release_signoff, bool):
+        raise ReadingPackError("author review release_signoff must be boolean")
+    if release_signoff and (modules is not None or record_ids is not None):
+        raise ReadingPackError(
+            "release signoff requires a complete, unscoped author review"
+        )
     records = _unit_records(
         config,
         data_by_lang,
@@ -480,6 +524,8 @@ def _render_manifest(
         review_projection["modules"] = list(modules)
     if record_ids is not None:
         review_projection["record_ids"] = list(record_ids)
+    if release_signoff:
+        review_projection["release_signoff"] = True
     review_id = f"AR-{_json_hash(review_projection)[:20].upper()}"
     manifest: dict[str, Any] = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
@@ -496,6 +542,8 @@ def _render_manifest(
         manifest["modules"] = list(modules)
     if record_ids is not None:
         manifest["record_ids"] = list(record_ids)
+    if release_signoff:
+        manifest["release_signoff"] = True
     return manifest
 
 
@@ -512,11 +560,13 @@ def validate_author_review_manifest(value: Any) -> dict[str, Any]:
     _require_keys(
         value,
         required_fields,
-        required_fields | {"modules", "record_ids"},
+        required_fields | {"modules", "record_ids", "release_signoff"},
         "author review manifest",
     )
     if value["schema_version"] != MANIFEST_SCHEMA_VERSION:
         raise ReadingPackError("invalid author review manifest: unsupported schema version")
+    if value.get("release_signoff", False) is not True and "release_signoff" in value:
+        raise ReadingPackError("invalid author review manifest: release_signoff")
     if not isinstance(value["review_id"], str) or not _REVIEW_ID.fullmatch(value["review_id"]):
         raise ReadingPackError("invalid author review manifest: review_id")
     modules = value.get("modules")
@@ -545,6 +595,10 @@ def validate_author_review_manifest(value: Any) -> dict[str, Any]:
         selected_ids = {record.get("record_id") for record in value["records"]}
         if selected_ids != set(record_ids):
             raise ReadingPackError("invalid author review manifest: record scope")
+    if value.get("release_signoff") and (modules is not None or record_ids is not None):
+        raise ReadingPackError(
+            "invalid author review manifest: release signoff cannot be scoped"
+        )
     try:
         date.fromisoformat(value["created_at"])
     except (TypeError, ValueError) as exc:
@@ -663,6 +717,7 @@ def export_author_review_evidence(
     created_at: str | None = None,
     modules: tuple[str, ...] | None = None,
     record_ids: tuple[str, ...] | None = None,
+    release_signoff: bool = False,
 ) -> Path:
     project = Path(project).resolve()
     manifest = _render_manifest(
@@ -670,6 +725,7 @@ def export_author_review_evidence(
         created_at=created_at or date.today().isoformat(),
         modules=modules,
         record_ids=record_ids,
+        release_signoff=release_signoff,
     )
     destination = _evidence_directory(project, output)
     if destination.exists():
@@ -713,6 +769,7 @@ def _load_review_evidence(
             if "record_ids" in manifest
             else None
         ),
+        release_signoff=manifest.get("release_signoff", False),
     )
     if manifest != expected_manifest:
         raise ReadingPackError(
@@ -747,25 +804,114 @@ def _record_lookup(data_by_lang: Mapping[str, Mapping[str, Any]]) -> dict[tuple[
     return _record_index(data_by_lang)
 
 
-def _config_with_author_review(project: Path, approved: bool) -> str:
+def _config_with_author_review(
+    project: Path,
+    approved: bool,
+    *,
+    release: Mapping[str, Any] | None = None,
+) -> str:
     text = _read_text(project / "reading-pack.toml", 4 * 1024 * 1024, "project config")
-    if not approved:
+    if not approved and release is None:
         return text
+    updates: dict[str, str] = {}
+    if approved:
+        updates["author_review"] = "approved"
+    if release is not None and release.get("decision") == "approve":
+        publisher = release.get("publisher_review")
+        if publisher not in {"approved", "not_required"}:
+            raise ReadingPackError("release signoff requires publisher review disposition")
+        updates.update({
+            "design_constraints": "approved",
+            "rights_review": "approved",
+            "author_review": "approved",
+            "publisher_review": publisher,
+            "reconstruction_review": "approved",
+            "publication_decision": "approved",
+        })
     lines = text.splitlines(keepends=True)
     in_workflow = False
-    changed = 0
+    changed: set[str] = set()
     for index, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith("[") and stripped.endswith("]"):
             in_workflow = stripped == "[workflow]"
             continue
-        if in_workflow and re.fullmatch(r'author_review\s*=\s*"[^"]*"\s*', stripped):
-            newline = "\n" if line.endswith("\n") else ""
-            lines[index] = 'author_review = "approved"' + newline
-            changed += 1
-    if changed != 1:
-        raise ReadingPackError("reading-pack.toml must contain exactly one workflow.author_review")
+        if not in_workflow:
+            continue
+        match = re.fullmatch(r'([a-z_]+)\s*=\s*"[^"]*"\s*', stripped)
+        if match is None or match.group(1) not in updates:
+            continue
+        field = match.group(1)
+        newline = "\n" if line.endswith("\n") else ""
+        lines[index] = f'{field} = "{updates[field]}"' + newline
+        if field in changed:
+            raise ReadingPackError(
+                f"reading-pack.toml contains duplicate workflow.{field}"
+            )
+        changed.add(field)
+    missing = set(updates) - changed
+    if missing:
+        raise ReadingPackError(
+            "reading-pack.toml is missing workflow fields: "
+            + ", ".join(sorted(missing))
+        )
     return "".join(lines)
+
+
+def _quality_with_release_signoff(
+    project: Path,
+    prospective: Mapping[str, Mapping[str, Any]],
+    reviewer: str,
+    *,
+    project_level: int,
+) -> tuple[dict[str, Any], dict[str, Any], str, str]:
+    before = load_quality_plan(project)
+    if before is None:
+        raise ReadingPackError(
+            "release signoff requires quality-plan.json and measured evaluation evidence"
+        )
+    after = deepcopy(before)
+    policies = after.get("critical_policies")
+    if not isinstance(policies, dict):
+        raise ReadingPackError("release signoff quality plan has invalid critical policies")
+    after["critical_policies"] = {name: "approved" for name in policies}
+    authority = after.get("authority")
+    if not isinstance(authority, dict):
+        raise ReadingPackError("release signoff quality plan has invalid authority")
+    reviewers = authority.get("reviewers")
+    if not isinstance(reviewers, list):
+        raise ReadingPackError("release signoff quality plan has invalid reviewers")
+    authority["reviewers"] = list(dict.fromkeys([*reviewers, reviewer]))
+    authority["status"] = "approved"
+    authority["canonical_data_sha256"] = canonical_data_hash(dict(prospective))
+    authority["quality_contract_sha256"] = quality_contract_hash(after)
+    result = after.get("acceptance", {}).get("result")
+    if not isinstance(result, dict):
+        raise ReadingPackError("release signoff requires measured evaluation results")
+    evidence_name = result.get("evidence_record")
+    if not isinstance(evidence_name, str) or not evidence_name:
+        raise ReadingPackError("release signoff requires measured evaluation evidence")
+    evidence_path = (project / evidence_name).resolve()
+    try:
+        relative_evidence = evidence_path.relative_to(project).as_posix()
+    except ValueError as exc:
+        raise ReadingPackError("release signoff evaluation evidence is outside the project") from exc
+    evidence_sha256 = _file_sha256(evidence_path)
+    quality_issues = validate_quality_plan(
+        project,
+        prospective,
+        release=True,
+        project_level=project_level,
+        plan_override=after,
+    )
+    fatal = errors(quality_issues)
+    if fatal:
+        first = fatal[0]
+        raise ReadingPackError(
+            "release signoff prerequisites are incomplete: "
+            f"{first.code} {first.path}: {first.message}"
+        )
+    return deepcopy(before), after, relative_evidence, evidence_sha256
 
 
 def _plan_id(plan: Mapping[str, Any]) -> str:
@@ -789,6 +935,8 @@ def _decision_projection(parsed: Mapping[str, Any]) -> dict[str, Any]:
     }
     if "attestations" in parsed:
         projection["attestations"] = deepcopy(parsed["attestations"])
+    if "release" in parsed:
+        projection["release"] = deepcopy(parsed["release"])
     return projection
 
 
@@ -796,8 +944,27 @@ def _build_author_review_plan_from_parsed(
     project: Path,
     manifest: Mapping[str, Any],
     parsed: Mapping[str, Any],
-) -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any], str]:
+) -> tuple[
+    dict[str, Any],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+    str,
+    dict[str, Any] | None,
+]:
     project = Path(project).resolve()
+    release = parsed.get("release")
+    if release is not None:
+        if (
+            not isinstance(release, Mapping)
+            or set(release) != {"decision", "publisher_review"}
+            or release.get("decision") not in {None, "approve", "hold"}
+            or release.get("publisher_review") not in {
+                None, "approved", "not_required"
+            }
+        ):
+            raise ReadingPackError("invalid author review release decision")
+        if release.get("decision") == "approve" and not parsed["final_signoff"]:
+            raise ReadingPackError("release approval requires final author signoff")
     actions_input = [
         item for item in parsed["decisions"]
         if item["decision"] in {
@@ -987,11 +1154,43 @@ def _build_author_review_plan_from_parsed(
                         raise ReadingPackError(
                             f"final signoff leaves {language}.{collection}.{record['id']} translation unapproved"
                         )
-    config_text_after = _config_with_author_review(project, parsed["final_signoff"])
+    approved_release = (
+        deepcopy(dict(release))
+        if isinstance(release, Mapping) and release.get("decision") == "approve"
+        else None
+    )
+    config_text_after = _config_with_author_review(
+        project,
+        parsed["final_signoff"],
+        release=approved_release,
+    )
     config_text_before = _read_text(
         project / "reading-pack.toml", 4 * 1024 * 1024, "project config"
     )
-    if not actions and config_text_after == config_text_before:
+    quality_after: dict[str, Any] | None = None
+    release_plan: dict[str, Any] | None = None
+    if approved_release is not None:
+        quality_before, quality_after, evidence_path, evidence_sha256 = (
+            _quality_with_release_signoff(
+                project,
+                prospective,
+                parsed["reviewer"],
+                project_level=config["level"],
+            )
+        )
+        release_plan = {
+            "decision": "approve",
+            "publisher_review": approved_release["publisher_review"],
+            "quality_plan_sha256_before": _json_hash(quality_before),
+            "quality_plan_sha256_after": _json_hash(quality_after),
+            "evaluation_evidence": evidence_path,
+            "evaluation_evidence_sha256": evidence_sha256,
+        }
+    if (
+        not actions
+        and config_text_after == config_text_before
+        and quality_after is None
+    ):
         raise ReadingPackError("author review plan contains no applicable decisions")
     plan: dict[str, Any] = {
         "schema_version": PLAN_SCHEMA_VERSION,
@@ -1018,6 +1217,8 @@ def _build_author_review_plan_from_parsed(
             "unchanged": len(parsed["decisions"]) - len(actions),
         },
     }
+    if release_plan is not None:
+        plan["release"] = release_plan
     plan["plan_id"] = _plan_id(plan)
     state_entry = {
         "review_id": plan["review_id"],
@@ -1046,7 +1247,9 @@ def _build_author_review_plan_from_parsed(
         ],
         "field_overrides": deepcopy(field_overrides),
     }
-    return plan, prospective, state_entry, config_text_after
+    if release_plan is not None:
+        state_entry["release"] = deepcopy(release_plan)
+    return plan, prospective, state_entry, config_text_after, quality_after
 
 
 def validate_author_review_plan(value: Any) -> dict[str, Any]:
@@ -1061,7 +1264,7 @@ def validate_author_review_plan(value: Any) -> dict[str, Any]:
         "config_sha256_before", "config_sha256_after", "final_signoff",
         "actions", "field_overrides", "summary",
     }
-    _require_keys(value, fields, fields, "author review plan")
+    _require_keys(value, fields, fields | {"release"}, "author review plan")
     if value["schema_version"] != PLAN_SCHEMA_VERSION:
         raise ReadingPackError("invalid author review plan: unsupported schema version")
     if not isinstance(value["plan_id"], str) or not _PLAN_ID.fullmatch(value["plan_id"]):
@@ -1085,34 +1288,46 @@ def validate_author_review_plan(value: Any) -> dict[str, Any]:
         raise ReadingPackError("invalid author review plan: reviewed_at") from exc
     if not isinstance(value["final_signoff"], bool):
         raise ReadingPackError("invalid author review plan: final_signoff")
+    release = None
+    if "release" in value:
+        release = _validate_release_record(
+            value["release"], "author review plan release"
+        )
+        if not value["final_signoff"]:
+            raise ReadingPackError(
+                "invalid author review plan: release requires final_signoff"
+            )
     if not isinstance(value["actions"], list) or not isinstance(value["field_overrides"], list):
         raise ReadingPackError("invalid author review plan: action arrays")
     # Reuse state validation for the body-free action shapes.
+    state_review = {
+        "review_id": value["review_id"],
+        "plan_id": value["plan_id"],
+        "reviewer": value["reviewer"],
+        "reviewed_at": value["reviewed_at"],
+        "manifest_sha256": value["manifest_sha256"],
+        "decisions_sha256": value["decisions_sha256"],
+        "canonical_sha256_before": value["canonical_data_sha256_before"],
+        "canonical_sha256_after": value["canonical_data_sha256_after"],
+        "final_signoff": value["final_signoff"],
+        "actions": [
+            {
+                key: action[key]
+                for key in (
+                    "language", "collection", "module", "module_state_sha256",
+                    "record_id", "decision", "before_sha256", "after_sha256",
+                    "after_status", "after_translation_status",
+                )
+            }
+            for action in value["actions"]
+        ],
+        "field_overrides": value["field_overrides"],
+    }
+    if release is not None:
+        state_review["release"] = release
     state_probe = {
         "schema_version": STATE_SCHEMA_VERSION,
-        "reviews": [{
-            "review_id": value["review_id"],
-            "plan_id": value["plan_id"],
-            "reviewer": value["reviewer"],
-            "reviewed_at": value["reviewed_at"],
-            "manifest_sha256": value["manifest_sha256"],
-            "decisions_sha256": value["decisions_sha256"],
-            "canonical_sha256_before": value["canonical_data_sha256_before"],
-            "canonical_sha256_after": value["canonical_data_sha256_after"],
-            "final_signoff": value["final_signoff"],
-            "actions": [
-                {
-                    key: action[key]
-                    for key in (
-                        "language", "collection", "module", "module_state_sha256",
-                        "record_id", "decision", "before_sha256", "after_sha256",
-                        "after_status", "after_translation_status",
-                    )
-                }
-                for action in value["actions"]
-            ],
-            "field_overrides": value["field_overrides"],
-        }],
+        "reviews": [state_review],
     }
     validate_author_review_state(state_probe)
     action_fields = {
@@ -1165,6 +1380,7 @@ def _review_transaction_path(path: str, kind: str) -> bool:
     return (
         (kind == "json" and re.fullmatch(r"data/pack\.(?:ja|en)\.json", path) is not None)
         or (kind == "json" and path == STATE_NAME)
+        or (kind == "json" and path == "quality-plan.json")
         or (kind == "text" and path == "reading-pack.toml")
     )
 
@@ -1174,7 +1390,10 @@ def _apply_author_review_plan_with_builder(
     plan: Mapping[str, Any],
     builder: Callable[
         [Path],
-        tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any], str],
+        tuple[
+            dict[str, Any], dict[str, dict[str, Any]], dict[str, Any], str,
+            dict[str, Any] | None,
+        ],
     ],
 ) -> dict[str, Any]:
     project = Path(project).resolve()
@@ -1187,7 +1406,7 @@ def _apply_author_review_plan_with_builder(
             label="author review",
             maximum_bytes=MAX_STATE_BYTES * 8,
         )
-        current_plan, prospective, state_entry, config_after = builder(project)
+        current_plan, prospective, state_entry, config_after, quality_after = builder(project)
         if current_plan != checked:
             raise ReadingPackError(
                 "author review, plan, or canonical data changed after planning; create a fresh plan"
@@ -1241,9 +1460,22 @@ def _apply_author_review_plan_with_builder(
                 ),
             ]
         )
+        if quality_after is not None:
+            quality_before = load_quality_plan(project)
+            if quality_before is None:
+                raise ReadingPackError(
+                    "author review release quality plan disappeared after planning"
+                )
+            changes.append(
+                ArtifactChange(
+                    "quality-plan.json", "json", quality_before, quality_after
+                )
+            )
 
         def validate_applied_review() -> None:
-            _, _, issues = validate_project(project)
+            _, _, issues = validate_project(
+                project, release=("release" in checked)
+            )
             fatal = errors(issues)
             if fatal:
                 first = fatal[0]
@@ -1265,6 +1497,9 @@ def _apply_author_review_plan_with_builder(
         "plan_id": checked["plan_id"],
         "summary": deepcopy(checked["summary"]),
         "final_signoff": checked["final_signoff"],
+        "release_decision": (
+            checked.get("release", {}).get("decision")
+        ),
     }
 
 

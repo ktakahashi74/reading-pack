@@ -44,7 +44,7 @@ def default_config_text(
     return f'''# Canonical project configuration. Generated packs are written to dist/.
 format_version = 1
 slug = {_toml_string(slug)}
-version = "0.4.0-draft"
+version = "0.5.0-draft"
 pack_date = "{today}"
 status = "draft"
 primary_language = {_toml_string(primary_language)}

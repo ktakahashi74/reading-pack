@@ -801,6 +801,8 @@ def validate_quality_plan(
     data_by_lang: Mapping[str, Mapping[str, Any]],
     release: bool = False,
     project_level: int | None = None,
+    *,
+    plan_override: Mapping[str, Any] | None = None,
 ) -> list[QualityIssue]:
     """Validate profile conformance without assigning a quality score.
 
@@ -810,7 +812,11 @@ def validate_quality_plan(
     readable by reporting the absence as a warning.
     """
 
-    plan = load_quality_plan(project)
+    plan = (
+        dict(plan_override)
+        if plan_override is not None
+        else load_quality_plan(project)
+    )
     if plan is None:
         return [
             QualityIssue(
