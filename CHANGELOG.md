@@ -4,11 +4,6 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
-### Changed
-
-- Split the former aggregate Reading Pack specification into an artifact-only Format Specification, a tool-neutral Production Standard, and a toolkit-specific Reference Implementation Profile. Format conformance, production conformance, and generator identity are now independent claims.
-- Expanded the public model-evaluation form with level mappings, safe example questions, and a third-party self-declaration block while keeping exact attack wording and raw answers private.
-
 ## [0.5.0] — 2026-08-16
 
 ### Added
@@ -22,6 +17,9 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ### Changed
 
+- Split the former aggregate Reading Pack specification into an artifact-only Format Specification, a tool-neutral Production Standard, and a toolkit-specific Reference Implementation Profile. Format conformance, production conformance, and generator identity are now independent claims.
+- Expanded the public model-evaluation form with level mappings, safe example questions, and a third-party self-declaration block while keeping exact attack wording and raw answers private.
+- Linked the optional alpha Reading Pack Bot deployment server from the English and Japanese project READMEs while keeping it separate from the core toolkit.
 - Manuscript handoff is explicitly one dependency-resolved file. DOCX, RTF, and dependency-bearing Org remain upstream conversion concerns; direct import does not add a custom bundle or cook layer and rejects unresolved `#+INCLUDE` directives.
 - Author review now has one public exchange format and four plain subcommands: `review export`, `status`, `plan`, and `apply`.
 - The 1,787-line CLI is split into a small dispatcher and feature-scoped core, author-review, and producer command modules. The `reading_pack` generation kernel is isolated at about 6,600 lines, authority workflows live in `reading_pack_review`, and catalog extraction, candidate workflows, private candidate review, work ledgers, and Agent Skill distribution live behind the optional `reading_pack_producer` boundary. The core CLI has no direct producer dependency.
