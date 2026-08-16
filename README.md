@@ -186,6 +186,7 @@ The ordinary path uses `review export --release-signoff` to place content and pu
 | [Format specification](spec/reading-pack-format-spec.en.md) | Normative requirements for the Reading Pack artifact |
 | [Production standard](spec/reading-pack-production-standard.en.md) | Normative levels, process, evaluation, and release conformance |
 | [Reference implementation profile](spec/reading-pack-reference-implementation.en.md) | Public contract specific to this toolkit |
+| [Adding another language](docs/adding-languages.en.md) | Extend the implementation beyond the currently supported English and Japanese |
 | [Security policy](SECURITY.md) | Review threat boundaries and report vulnerabilities |
 
 Run `reading-pack --help` or `reading-pack COMMAND --help` for the current CLI.

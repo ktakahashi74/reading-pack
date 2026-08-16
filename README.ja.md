@@ -186,6 +186,7 @@ PDFの結果は必ず人が確認します。スキャンや複雑な組版で�
 | [形式仕様](spec/reading-pack-format-spec.ja.md) | Reading Pack成果物の規範要件です |
 | [制作標準](spec/reading-pack-production-standard.ja.md) | Level、工程、評価、公開適合の規範要件です |
 | [参照実装プロファイル](spec/reading-pack-reference-implementation.ja.md) | このtoolkit固有の公開契約です |
+| [新しい言語への対応](docs/adding-languages.ja.md) | 現在の日英対応を、実装として他の言語へ拡張する手順です |
 | [セキュリティ方針](SECURITY.md) | 脅威境界と脆弱性の報告方法を記載しています |
 
 現行CLIは`reading-pack --help`または`reading-pack COMMAND --help`で確認できます。
