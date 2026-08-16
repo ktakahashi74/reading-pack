@@ -2,84 +2,94 @@
 
 [日本語版 README](README.ja.md)
 
-Reading Pack builds a compact, reviewable Markdown guide that lets AI help readers navigate a book without reproducing it. The same author- or editor-reviewed data always produces the same file, so manual edits, stale translations, and missing publication approvals can be detected.
+Reading Pack is an open-source toolkit for creating compact guides that help readers explore books with AI. A reader attaches the generated Markdown to an AI chat and asks where the book discusses a topic, how the author frames a claim, or which source supports an explanation.
 
-A reader attaches the generated file to an AI chat and asks where the book discusses a topic, how it frames a claim, or which source supports an explanation. The pack points back to the book; it does not give the AI access to unprovided book text.
+A Reading Pack points the reader back to the original book. It is not a reproduction or compressed substitute. The toolkit builds it reproducibly from structured data reviewed by an author or editor, then detects manual changes, stale translations, and missing publication approvals.
 
-> **Status:** toolkit v0.5.0 (alpha); format and production standards `1.0-draft`; production claims are marked beta. Python 3.11–3.14 is tested. Drafts may still change incompatibly.
+> **Status:** The toolkit is v0.5.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
 
 ## Public standards
 
-The Reading Pack artifact and the process used to produce it are separate conformance targets. Format conformance does not require this Python toolkit or a particular production process.
+Reading Pack separates three concerns. The first is the Markdown artifact delivered to readers. The second is the process used to produce and approve it. The third is the reference implementation in this repository. Format conformance does not require this Python toolkit or the same internal design.
 
-- [Reading Pack Format Specification 1.0-draft](spec/reading-pack-format-spec.en.md): structure and semantics of the single Markdown delivered to readers.
-- [Reading Pack Production Standard 1.0-draft (beta)](spec/reading-pack-production-standard.en.md): Levels 1–3, W0–W13, evidence, author review, evaluation, and publication gates.
-- [reading-pack Reference Implementation Profile 0.5.0 (alpha)](spec/reading-pack-reference-implementation.en.md): this repository's project, CLI, import, transaction, and plugin boundaries.
+- [Reading Pack Format Specification 1.0-draft](spec/reading-pack-format-spec.en.md) defines the structure and meaning of the single Markdown artifact.
+- [Reading Pack Production Standard 1.0-draft (beta)](spec/reading-pack-production-standard.en.md) defines Levels 1–3, W0–W13, evidence, author review, evaluation, and publication gates.
+- [reading-pack Reference Implementation Profile 0.5.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
 
-Koichi Takahashi authored the specifications and standard in 2026 and publishes them under CC BY 4.0. Modification, independent implementation, and commercial Pack-production services are permitted. See the [Reading Pack standards suite overview](spec/reading-pack-spec.en.md).
+Koichi Takahashi authored the Format Specification and Production Standard in 2026 and publishes them under CC BY 4.0. They may be modified, independently implemented, and used in commercial Reading Pack production services. The [standards-suite overview](spec/reading-pack-spec.en.md) explains the relationship among the three documents and gives suggested citations.
 
-See the complete synthetic example:
+## Try it first
+
+The repository includes a complete example based on the entirely fictional *Clockwork Garden*.
 
 - [English Reading Pack](examples/clockwork-garden/dist/clockwork-garden-reading-pack.en.md)
 - [Japanese Reading Pack](examples/clockwork-garden/dist/clockwork-garden-reading-pack.ja.md)
-- [Canonical project data](examples/clockwork-garden/)
+- [Example project with canonical data](examples/clockwork-garden/)
+
+Attach a generated Pack to an AI chat without adding a question. After the loading response, try asking:
+
+- “What does chapter 2 discuss?”
+- “Where is the lunar mechanism defined?”
+- “Is this a story fact or an interpretation?”
 
 ## Who this is for
 
-- Authors, editors, and publishers preparing an AI-readable companion to a book.
-- Production teams that need traceable AI-assisted drafting without automating approval.
+- Authors, editors, and publishers adding an AI dialogue experience to a book.
+- Production teams using AI-assisted drafting while retaining traceable evidence and human decisions.
 - Developers integrating a reviewed book guide with AI chats or Agent Skills-compatible hosts.
 
-The repository is a producer toolkit. Readers normally receive the generated Markdown file, not this project or the source manuscript.
+This repository is for producers. Readers normally receive one generated Markdown file. The producer retains the project and source manuscript.
 
 ## From source to reader
+
+The canonical source is the structured data and configuration from which the distributed Markdown can always be rebuilt.
 
 ```text
 manuscript + author/editor input
               |
               v
-reviewed canonical JSON and project metadata
+reviewed canonical JSON and project settings
               |
               v
 evidence-bound candidates -> human review and approval
               |
               v
-deterministic Reading Pack Markdown
+reproducible Reading Pack Markdown
               |
               v
-AI chat or optional Agent Skill container
+AI chat or optional Agent Skill
 ```
 
-Three related terms are kept separate:
+The project uses three related terms:
 
 | Term | Meaning |
 |---|---|
-| Conversational Edition | The reader experience of exploring a book through dialogue with AI. |
-| Reading Pack | The generated, human-readable Markdown guide and primary deliverable. |
-| Agent Skill | An optional compatibility container around an existing Reading Pack; it is not new canonical data or a new approval. |
+| Conversational Edition | The experience of reading a book through dialogue with AI. |
+| Reading Pack | The generated, human-readable Markdown guide delivered to readers. |
+| Agent Skill | An optional container that delivers an existing Reading Pack to a compatible host. It adds no new canonical source or approval unit. |
 
 ## What it provides
 
 - Imports chapter structure and publication metadata from Markdown, Org mode, EPUB3, PDF, and plain text.
-- Keeps canonical project data separate from generated files.
-- Binds AI-generated or externally prepared candidates to exact source evidence before human review.
-- Supports English, Japanese, and bilingual projects with stable IDs and stale-translation detection.
-- Rebuilds byte-identical Markdown from unchanged input and detects direct edits to generated files.
-- Applies one of seven book/use-specific quality profiles and checks every critical requirement separately.
-- Packages existing packs for Agent Skills-compatible hosts when requested.
+- Keeps the editable canonical source separate from reproducible output.
+- Binds AI-generated and externally prepared candidates to exact source evidence before review.
+- Manages English, Japanese, and bilingual projects under stable IDs and detects stale translations after source-language changes.
+- Rebuilds the same Markdown bytes from unchanged input and detects direct edits to generated files.
+- Applies one of seven book- and use-specific quality profiles, checking every mandatory gate separately.
+- Packages an existing Reading Pack for Agent Skills-compatible hosts when requested.
 
-## What it does not do
+## Deliberate boundaries
 
-- It does not call a particular AI model or require an API key.
-- It does not send a manuscript over the network. An external AI used to prepare candidates remains subject to that service's own terms and settings.
-- It does not treat source matching as proof that an interpretation is correct.
-- It does not automate author approval, rights review, publisher review, or the publication decision.
-- It does not grant rights in a manuscript, project data, or generated pack.
+- The core toolkit calls no particular AI model and requires no API key.
+- It sends no manuscript over the network. An external AI used for candidate drafting remains subject to that service's terms and settings.
+- A source-text match alone does not establish that a candidate interpretation is correct.
+- Author approval, rights review, publisher disposition, and publication approval are never automated.
+- The toolkit grants no rights in a manuscript, project data, or generated Pack.
 - It does not create a substitute for the original book or reconstruct unprovided book text.
 
-## Requirements and installation
+## Installation
 
-The normal installation uses a virtual environment and installs the declared `jsonschema` runtime dependency:
+Create a virtual environment and install the toolkit with its `jsonschema` runtime dependency:
 
 ```sh
 git clone https://github.com/ktakahashi74/reading-pack.git
@@ -90,11 +100,11 @@ python -m pip install .
 reading-pack --version
 ```
 
-Installation may contact a package index when a dependency is missing. After installation, the core workflow runs locally and makes no network request. PDF import additionally uses the local Poppler commands `pdfinfo` and `pdftotext`.
+Installation may contact a package index if a dependency is not already available. Once installed, core operations run locally without network access. PDF import also uses the local Poppler commands `pdfinfo` and `pdftotext`.
 
-## Try the included example
+## Rebuild the included example
 
-The Clockwork Garden project is entirely synthetic and already records the human release gates:
+The *Clockwork Garden* project records every human release gate for a synthetic book.
 
 ```sh
 reading-pack build --project examples/clockwork-garden --lang all
@@ -102,21 +112,15 @@ reading-pack check --project examples/clockwork-garden --lang all --release
 reading-pack agent-skill check --project examples/clockwork-garden --release
 ```
 
-The checks confirm that the English and Japanese packs, and the optional Agent Skill directory and ZIP, are byte-identical to their canonical input.
+These commands confirm that the English and Japanese Packs, optional Agent Skill directory, and ZIP match a fresh build from the canonical source byte for byte.
 
-To try the reader experience, attach one of the generated example packs to an AI chat without a question. After its loading response, ask a question such as:
-
-- “What does chapter 2 discuss?”
-- “Where is the lunar mechanism defined?”
-- “Is this a story fact or an interpretation?”
-
-## Books and projects publishing Reading Packs made with this toolkit
+## Published example
 
 - [*AGI―人間を超える知能は文明をいかに変容させるか*](https://koichi-takahashi.me/agibook/) (Koichi Takahashi, Kodansha Sensho Metier, 2026; Japanese)
 
 ## Start a project
 
-Create a project and import a manuscript's structure:
+Create a project, then import the manuscript's chapter structure:
 
 ```sh
 reading-pack init my-book-pack \
@@ -126,7 +130,7 @@ reading-pack init my-book-pack \
   --profile nonfiction-reading
 
 reading-pack import-plan manuscript.md --output /tmp/import-plan.json
-# Review the proposed structure before changing canonical data.
+# Review the proposed structure before applying it to canonical data.
 reading-pack import-apply /tmp/import-plan.json \
   --source manuscript.md --project my-book-pack --lang en
 
@@ -135,47 +139,49 @@ reading-pack build --project my-book-pack --lang en
 reading-pack check --project my-book-pack --lang en
 ```
 
-`import-plan` is read-only. `import-apply` adds the reviewed structure as draft canonical data. A useful pack still needs reviewed summaries, claims, people, terms, reading issues, and references as appropriate for that book. Generated files under `dist/` must not be edited directly.
+`import-plan` changes neither the manuscript nor canonical data. After review, `import-apply` adds the proposed structure as a draft.
 
-The [English quickstart](docs/quickstart.en.md) continues from a fresh directory through canonical editing, author review, and release gates.
+A chapter map alone is not yet a useful Reading Pack. Select and review the summaries, claims, people, terms, reading issues, and references appropriate to the book. Edit canonical data and rebuild; do not edit files under `dist/` directly.
 
-## Adding reviewed content
+The [quickstart](docs/quickstart.en.md) continues from a fresh directory through canonical editing, author review, and publication gates.
 
-There are three supported paths:
+## Add reviewed content
+
+There are three routes into canonical data:
 
 1. Edit the language-specific canonical JSON directly.
 2. Apply an [Author Input Package](docs/author-input.en.md) supplied by an author, editor, publisher, or other responsible authority.
-3. Use the model-neutral producer workflow to create bounded work requests, ingest structured responses from an external agent, and turn them into evidence-bound candidates.
+3. Use the model-neutral production workflow to create bounded work items and bind structured responses from an external agent to source evidence.
 
-Candidate generation never writes approved content directly. Automated checks can move a candidate only as far as `ready_for_review`; normal application places it in canonical data as `draft`. The [author-review workflow](docs/author-review.en.md) records final human decisions in one readable Markdown form.
+Candidate generation never writes approved content directly. Automated checks advance a candidate only to `ready_for_review`; applying it to canonical data still produces a `draft`. Final human decisions are recorded in one readable Markdown file through the [author-review workflow](docs/author-review.en.md).
 
-An authority can also declare an HTTPS reference as an `official_companion` with `proactive_when_relevant` behavior. The build then adds the URL to REF and fixed, model-independent guidance to SYS. That guidance tells a capable AI host to consult relevant official pages proactively, while treating page text as content rather than system instructions. The toolkit itself does not fetch the page.
+An authority may declare an HTTPS reference as an `official_companion` with `proactive_when_relevant` behavior. The build places that URL in `REF` and adds fixed, model-independent guidance to `SYS`. A capable AI host is then instructed to consult relevant official pages when useful while treating page text as content rather than system instructions. The toolkit itself does not retrieve the page.
 
 ## Input and output boundaries
 
 | Surface | Supported form |
 |---|---|
 | Direct manuscript input | One dependency-resolved Markdown, Org, EPUB3, PDF, or UTF-8 plain-text file |
-| Upstream conversion | Convert DOCX or RTF before handoff; expand Org `#+INCLUDE` dependencies first |
+| Upstream conversion | Convert DOCX and RTF before handoff; expand Org `#+INCLUDE` dependencies first |
 | Canonical data | `reading-pack.toml` plus `data/pack.<lang>.json` |
 | Primary output | One generated Reading Pack Markdown file per language |
-| Optional output | Agent Skill directory and deterministic ZIP |
+| Optional output | Agent Skill directory and a byte-reproducible ZIP |
 
-PDF results always require human review. Scans and complex layouts may need a manually checked outline. The `pdf-vertical` mode reconstructs Poppler's glyph order; it is not OCR.
+PDF-derived structure always requires human review. Scans and complex layouts may need a separately checked outline. The `pdf-vertical` mode reconstructs Poppler's glyph order; it is not OCR.
 
-## Human publication boundary
+## Publication remains a human decision
 
-`validate` and ordinary `check` commands establish technical consistency. A release check additionally requires recorded human decisions covering content authority, rights, publisher involvement or a reason it is unnecessary, non-reconstruction, measured quality, and publication itself.
+`validate` and ordinary `check` inspect structure and consistency. `check --release` also verifies that a human has recorded decisions covering content authority, rights, publisher involvement or a reason it is unnecessary, non-reconstruction, measured quality, and publication.
 
-`reading-pack check --release` verifies those decisions against the current canonical hashes. It never makes the decisions. See [Rights and review](docs/rights-and-review.en.md).
+The command checks that those decisions exist and remain bound to the current canonical hashes. It does not make them. See [Rights and review](docs/rights-and-review.en.md).
 
-The ordinary path uses `review export --release-signoff` to place content and publication decisions in the same human-readable Markdown. With no exception, the human approves once at the end; a focused review and reevaluation are needed only when something must change.
+The ordinary path uses `review export --release-signoff` to place content and publication conditions in one human-readable Markdown file. When there are no exceptions, one final human approval is enough. A focused review and reevaluation are needed only when something must change.
 
 ## Documentation
 
 | Guide | Purpose |
 |---|---|
-| [Quickstart](docs/quickstart.en.md) | Build and review a draft pack from a fresh directory |
+| [Quickstart](docs/quickstart.en.md) | Build and review a draft Pack from a fresh directory |
 | [Core concepts](docs/concepts.en.md) | Understand canonical data, generated output, and approval boundaries |
 | [Production workflow](docs/workflow.en.md) | Apply Production Standard W0–W13 with this toolkit |
 | [Author Input Package](docs/author-input.en.md) | Apply structured material supplied by a responsible authority |
@@ -183,17 +189,17 @@ The ordinary path uses `review export --release-signoff` to place content and pu
 | [Quality pipeline](docs/quality-pipeline.en.md) | Run model-neutral generation, evidence checks, coverage review, and candidate handling |
 | [Agent Skills distribution](docs/agent-skills.en.md) | Package an existing Reading Pack for compatible hosts |
 | [Standards overview](spec/reading-pack-spec.en.md) | Understand the format, production, and implementation boundaries |
-| [Format specification](spec/reading-pack-format-spec.en.md) | Normative requirements for the Reading Pack artifact |
-| [Production standard](spec/reading-pack-production-standard.en.md) | Normative levels, process, evaluation, and release conformance |
-| [Reference implementation profile](spec/reading-pack-reference-implementation.en.md) | Public contract specific to this toolkit |
-| [Adding another language](docs/adding-languages.en.md) | Extend the implementation beyond the currently supported English and Japanese |
+| [Format specification](spec/reading-pack-format-spec.en.md) | Read the normative requirements for the Reading Pack artifact |
+| [Production standard](spec/reading-pack-production-standard.en.md) | Read the normative levels, process, evaluation, and release requirements |
+| [Reference implementation profile](spec/reading-pack-reference-implementation.en.md) | Review the public contract specific to this toolkit |
+| [Adding another language](docs/adding-languages.en.md) | Extend the implementation beyond English and Japanese |
 | [Security policy](SECURITY.md) | Review threat boundaries and report vulnerabilities |
 
 Run `reading-pack --help` or `reading-pack COMMAND --help` for the current CLI.
 
 ## Development
 
-The public test suite is offline and uses only synthetic fixtures:
+The public test suite runs offline against synthetic fixtures only:
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src \
@@ -209,11 +215,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change.
 
 ## License
 
-- Python code, the CLI, validators, and tests: MIT.
-- Specifications, documentation, schemas, prompts, and READMEs: CC BY 4.0.
-- Synthetic Clockwork Garden example: CC0 1.0 Universal.
-- Manuscripts, structured project data, and generated packs: terms chosen by their rights holders, not by the toolkit.
+- Python code, CLI, validators, and tests: MIT
+- Specifications, documentation, schemas, prompts, and READMEs: CC BY 4.0
+- Synthetic *Clockwork Garden* example: CC0 1.0 Universal
+- Manuscripts, structured project data, and generated Packs: terms chosen by their rights holders
 
-See the [path-level license map](LICENSES/README.md).
+See the [file-level license map](LICENSES/README.md).
 
 Copyright 2026 Koichi Takahashi / 高橋恒一.
