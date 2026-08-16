@@ -118,6 +118,10 @@ reading-pack agent-skill check --project examples/clockwork-garden --release
 
 - [『AGI―人間を超える知能は文明をいかに変容させるか』](https://koichi-takahashi.me/agibook/)（高橋恒一、講談社選書メチエ、2026年）
 
+## 関連プロジェクト
+
+- [Reading Pack Bot](https://github.com/ktakahashi74/reading-pack-bot)は、確認済みのReading PackをSlackまたはDiscord上の対話サービスとして公開する、任意のサーバー実装です。アルファ版であり、Reading Packの作成や利用に必須ではありません。
+
 ## 自分のプロジェクトを始める
 
 まず、プロジェクトを作り、原稿の章節構造を取り込みます。

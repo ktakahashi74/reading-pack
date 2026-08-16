@@ -118,6 +118,10 @@ These commands confirm that the English and Japanese Packs, optional Agent Skill
 
 - [*AGI―人間を超える知能は文明をいかに変容させるか*](https://koichi-takahashi.me/agibook/) (Koichi Takahashi, Kodansha Sensho Metier, 2026; Japanese)
 
+## Related project
+
+- [Reading Pack Bot](https://github.com/ktakahashi74/reading-pack-bot) is an optional alpha server for publishing a reviewed Reading Pack as a conversational interface on Slack or Discord. It is not required to create or use a Reading Pack.
+
 ## Start a project
 
 Create a project, then import the manuscript's chapter structure:
