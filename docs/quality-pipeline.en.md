@@ -1,5 +1,7 @@
 # Quality pipeline
 
+This guide describes how the `reading-pack` reference implementation satisfies the [Reading Pack Production Standard](../spec/reading-pack-production-standard.en.md). Schema names, commands, and private-run structures are toolkit-specific; another implementation need not reproduce those internals.
+
 Reading Pack treats “works for any book” as a controlled production claim. It
 does not mean that one prompt can publish every genre. The software provides the
 same bounded route from an exact source to a reviewable draft, while profiles

@@ -177,12 +177,53 @@ class SchemaTests(unittest.TestCase):
         old_normalization["normalization"] = "nfkc-casefold-whitespace-v1"
         self.assertFalse(validator.is_valid(old_normalization))
 
-    def test_bilingual_spec_has_matching_requirement_ids_and_section_numbers(self):
+    def test_bilingual_standards_suite_has_matching_requirement_ids_and_sections(self):
         root = Path(__file__).resolve().parents[1] / "spec"
-        ja = (root / "reading-pack-spec.ja.md").read_text(encoding="utf-8")
-        en = (root / "reading-pack-spec.en.md").read_text(encoding="utf-8")
-        self.assertEqual(re.findall(r"\*\*(RP-\d{3})\*\*", ja), re.findall(r"\*\*(RP-\d{3})\*\*", en))
-        self.assertEqual(re.findall(r"^## (\d+)\.", ja, re.MULTILINE), re.findall(r"^## (\d+)\.", en, re.MULTILINE))
+        documents = (
+            ("reading-pack-format-spec", "RPF"),
+            ("reading-pack-production-standard", "RPP"),
+            ("reading-pack-reference-implementation", "RPI"),
+        )
+        all_ids: list[str] = []
+        for stem, prefix in documents:
+            ja = (root / f"{stem}.ja.md").read_text(encoding="utf-8")
+            en = (root / f"{stem}.en.md").read_text(encoding="utf-8")
+            pattern = rf"\*\*({prefix}-\d{{3}})\*\*"
+            ja_ids = re.findall(pattern, ja)
+            en_ids = re.findall(pattern, en)
+            self.assertTrue(ja_ids, stem)
+            self.assertEqual(ja_ids, en_ids, stem)
+            self.assertEqual(len(ja_ids), len(set(ja_ids)), stem)
+            self.assertEqual(
+                re.findall(r"^## (\d+)\.", ja, re.MULTILINE),
+                re.findall(r"^## (\d+)\.", en, re.MULTILINE),
+                stem,
+            )
+            all_ids.extend(ja_ids)
+        self.assertEqual(len(all_ids), len(set(all_ids)))
+
+    def test_standards_overview_links_every_conformance_layer(self):
+        root = Path(__file__).resolve().parents[1] / "spec"
+        for language in ("ja", "en"):
+            overview = (root / f"reading-pack-spec.{language}.md").read_text(
+                encoding="utf-8"
+            )
+            for stem in (
+                "reading-pack-format-spec",
+                "reading-pack-production-standard",
+                "reading-pack-reference-implementation",
+            ):
+                self.assertIn(f"{stem}.{language}.md", overview)
+
+    def test_standards_suite_local_links_exist(self):
+        root = Path(__file__).resolve().parents[1] / "spec"
+        for document in root.glob("*.md"):
+            source = document.read_text(encoding="utf-8")
+            for target in re.findall(r"\[[^]]+\]\(([^)]+)\)", source):
+                if "://" in target or target.startswith("#"):
+                    continue
+                local = (document.parent / target.split("#", 1)[0]).resolve()
+                self.assertTrue(local.exists(), f"broken link in {document}: {target}")
 
     def test_cc_by_license_matches_installed_canonical_text_when_available(self):
         root = Path(__file__).resolve().parents[1]

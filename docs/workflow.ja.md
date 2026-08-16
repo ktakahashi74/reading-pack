@@ -1,5 +1,7 @@
 # 製作工程
 
+これは[Reading Pack制作標準](../spec/reading-pack-production-standard.ja.md)を`reading-pack`参照実装で運用するための公開ガイドである。完成するMarkdownの形式は[Reading Pack形式仕様](../spec/reading-pack-format-spec.ja.md)が別に定める。ここにあるcommand名、file名、session、transactionはtoolkit固有であり、第三者が制作適合を宣言するための必須実装ではない。
+
 読解パックはW0からW13までの工程で作る。各工程には安定したID、実施主体、出力、通過条件がある。Dは再現可能な処理、Lは検査を伴う任意のモデル支援、Hはソフトウェアに代行させない人間の判断を表す。Rは、氏名付きの人間または監査記録付きAIによる候補の一次レビューである。
 
 ## W0 — 設計制約を決める（H）

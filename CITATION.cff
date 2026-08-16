@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use this toolkit or specification, please cite it as below."
-title: "Reading Pack: Open-source toolkit for Conversational Editions"
+message: "If you use the toolkit or implement the Reading Pack standards suite, cite this work and name the applicable document and version."
+title: "Reading Pack: Standards suite and open-source toolkit for Conversational Editions"
 type: software
 version: 0.5.0
 date-released: 2026-08-16
@@ -16,6 +16,7 @@ keywords:
   - publishing
   - bilingual
 abstract: >-
-  An offline-first Python toolkit and bilingual human-review workflow for
-  creating deterministic Reading Packs for books without reproducing the
-  manuscript.
+  The Reading Pack Format Specification, tool-neutral Production Standard,
+  and an offline-first Python reference implementation for creating
+  deterministic, human-reviewed book guides without reproducing manuscripts.
+  The software is MIT-licensed; specifications and documentation are CC BY 4.0.

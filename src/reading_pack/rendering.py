@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .companion import is_companion_reference
 from .errors import ReadingPackError
 from .profiles import load_quality_plan
@@ -525,7 +526,9 @@ def _meta(
     workflow = config["workflow"]
     labels = {
         "ja": {
-            "spec": "仕様",
+            "format": "形式適合",
+            "production": "制作標準の対象",
+            "generator": "生成器",
             "level": "製作等級",
             "primary": "第一言語",
             "languages": "言語",
@@ -542,7 +545,9 @@ def _meta(
             "spoiler": "ネタバレ方針",
         },
         "en": {
-            "spec": "specification",
+            "format": "format conformance",
+            "production": "production target",
+            "generator": "generator",
             "level": "production level",
             "primary": "primary language",
             "languages": "languages",
@@ -577,7 +582,9 @@ def _meta(
         ]
     return "\n".join(
         [
-            f"{labels['spec']}: Reading Pack Specification 1.0-draft",
+            f"{labels['format']}: Reading Pack Format 1.0-draft conformant",
+            f"{labels['production']}: Reading Pack Production 1.0-draft Level {config['level']} beta",
+            f"{labels['generator']}: reading-pack toolkit {__version__}",
             f"{labels['level']}: {config['level']}",
             *profile_lines,
             f"{labels['primary']}: {config['primary_language']}",

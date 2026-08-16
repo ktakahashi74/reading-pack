@@ -4,6 +4,11 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
+### Changed
+
+- Split the former aggregate Reading Pack specification into an artifact-only Format Specification, a tool-neutral Production Standard, and a toolkit-specific Reference Implementation Profile. Format conformance, production conformance, and generator identity are now independent claims.
+- Expanded the public model-evaluation form with level mappings, safe example questions, and a third-party self-declaration block while keeping exact attack wording and raw answers private.
+
 ## [0.5.0] — 2026-08-16
 
 ### Added

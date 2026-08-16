@@ -1,6 +1,8 @@
 # Production workflow
 
-Each stage has a stable ID, actor, output, and gate. D means deterministic, L means optional model assistance followed by inspection, and H means a human decision that the software must not make.
+This public guide applies the [Reading Pack Production Standard](../spec/reading-pack-production-standard.en.md) with the `reading-pack` reference implementation. The completed Markdown format is defined separately by the [Reading Pack Format Specification](../spec/reading-pack-format-spec.en.md). Command names, file names, sessions, and transactions in this guide are toolkit-specific; another implementation need not copy them to claim production conformance.
+
+Each stage has a stable ID, actor, output, and gate. D means deterministic, L means optional model assistance followed by inspection, H means a human decision that the software must not make, and R means candidate triage by a named human or auditable AI.
 
 ## W0 — Set design constraints (H)
 

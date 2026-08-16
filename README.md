@@ -6,7 +6,17 @@ Reading Pack builds a compact, reviewable Markdown guide that lets AI help reade
 
 A reader attaches the generated file to an AI chat and asks where the book discusses a topic, how it frames a claim, or which source supports an explanation. The pack points back to the book; it does not give the AI access to unprovided book text.
 
-> **Status:** toolkit v0.5.0 (alpha), specification `1.0-draft`. Python 3.11–3.14 is tested. Draft formats may still change incompatibly.
+> **Status:** toolkit v0.5.0 (alpha); format and production standards `1.0-draft`; production claims are marked beta. Python 3.11–3.14 is tested. Drafts may still change incompatibly.
+
+## Public standards
+
+The Reading Pack artifact and the process used to produce it are separate conformance targets. Format conformance does not require this Python toolkit or a particular production process.
+
+- [Reading Pack Format Specification 1.0-draft](spec/reading-pack-format-spec.en.md): structure and semantics of the single Markdown delivered to readers.
+- [Reading Pack Production Standard 1.0-draft (beta)](spec/reading-pack-production-standard.en.md): Levels 1–3, W0–W13, evidence, author review, evaluation, and publication gates.
+- [reading-pack Reference Implementation Profile 0.5.0 (alpha)](spec/reading-pack-reference-implementation.en.md): this repository's project, CLI, import, transaction, and plugin boundaries.
+
+Koichi Takahashi authored the specifications and standard in 2026 and publishes them under CC BY 4.0. Modification, independent implementation, and commercial Pack-production services are permitted. See the [Reading Pack standards suite overview](spec/reading-pack-spec.en.md).
 
 See the complete synthetic example:
 
@@ -167,12 +177,15 @@ The ordinary path uses `review export --release-signoff` to place content and pu
 |---|---|
 | [Quickstart](docs/quickstart.en.md) | Build and review a draft pack from a fresh directory |
 | [Core concepts](docs/concepts.en.md) | Understand canonical data, generated output, and approval boundaries |
-| [Production workflow](docs/workflow.en.md) | Follow the complete W0–W13 process |
+| [Production workflow](docs/workflow.en.md) | Apply Production Standard W0–W13 with this toolkit |
 | [Author Input Package](docs/author-input.en.md) | Apply structured material supplied by a responsible authority |
 | [Author review](docs/author-review.en.md) | Record corrections and approval in one Markdown review |
 | [Quality pipeline](docs/quality-pipeline.en.md) | Run model-neutral generation, evidence checks, coverage review, and candidate handling |
 | [Agent Skills distribution](docs/agent-skills.en.md) | Package an existing Reading Pack for compatible hosts |
-| [Specification](spec/reading-pack-spec.en.md) | Read the normative `1.0-draft` requirements |
+| [Standards overview](spec/reading-pack-spec.en.md) | Understand the format, production, and implementation boundaries |
+| [Format specification](spec/reading-pack-format-spec.en.md) | Normative requirements for the Reading Pack artifact |
+| [Production standard](spec/reading-pack-production-standard.en.md) | Normative levels, process, evaluation, and release conformance |
+| [Reference implementation profile](spec/reading-pack-reference-implementation.en.md) | Public contract specific to this toolkit |
 | [Security policy](SECURITY.md) | Review threat boundaries and report vulnerabilities |
 
 Run `reading-pack --help` or `reading-pack COMMAND --help` for the current CLI.

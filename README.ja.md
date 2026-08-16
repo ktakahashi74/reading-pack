@@ -6,7 +6,17 @@ Reading Packは、AIが本の内容と所在を案内するための、短く検
 
 読者は生成されたファイルをAIチャットへ添付し、「この話題はどこにあるか」「著者はこの主張をどう位置付けているか」「この説明の根拠は何か」と質問できます。読解パックは原著へ戻るための案内であり、AIに未提供の書籍本文へのアクセスを与えるものではありません。
 
-> **開発状況：** ツールはv0.5.0（alpha）、仕様は`1.0-draft`です。Python 3.11–3.14で検査しています。草案期間中は形式が互換性なく変わる可能性があります。
+> **開発状況：** ツールはv0.5.0（alpha）、形式仕様と制作標準は`1.0-draft`、制作標準の運用表示はbetaです。Python 3.11–3.14で検査しています。草案期間中は互換性なく変わる可能性があります。
+
+## 公開標準
+
+Reading Packという成果物と、その作り方は別の規範です。形式適合には、このPythonツールや特定の制作工程を使う必要はありません。
+
+- [Reading Pack形式仕様 1.0-draft](spec/reading-pack-format-spec.ja.md)：読者へ渡す単一Markdownの構造と意味。
+- [Reading Pack制作標準 1.0-draft（beta）](spec/reading-pack-production-standard.ja.md)：Level 1〜3、W0〜W13、根拠、著者レビュー、評価、公開条件。
+- [reading-pack参照実装プロファイル 0.5.0（alpha）](spec/reading-pack-reference-implementation.ja.md)：このリポジトリのproject、CLI、取込、transaction、plugin境界。
+
+仕様と標準は高橋恒一が2026年に策定し、CC BY 4.0で公開しています。改変、独自実装、商用のPack制作サービスへの利用を認めます。全体像は[Reading Pack標準群](spec/reading-pack-spec.ja.md)にあります。
 
 完全な合成作例を確認できます。
 
@@ -167,12 +177,15 @@ PDFの結果は必ず人が確認します。スキャンや複雑な組版で�
 |---|---|
 | [クイックスタート](docs/quickstart.ja.md) | 新しいディレクトリから下書きパックを作り、確認します |
 | [主要概念](docs/concepts.ja.md) | 正本、生成物、承認の境界を説明します |
-| [製作工程](docs/workflow.ja.md) | W0–W13の全工程を説明します |
+| [製作工程](docs/workflow.ja.md) | 制作標準W0–W13をこのtoolkitで実施する方法を説明します |
 | [Author Input Package](docs/author-input.ja.md) | 責任主体から受け取った構造化入力を適用します |
 | [著者レビュー](docs/author-review.ja.md) | 修正と承認を一つのMarkdownへ記録します |
 | [品質保証](docs/quality-pipeline.ja.md) | model非依存生成、根拠検査、欠落確認、候補処理を説明します |
 | [Agent Skills配布](docs/agent-skills.ja.md) | 既存の読解パックを対応環境向けにまとめます |
-| [仕様](spec/reading-pack-spec.ja.md) | `1.0-draft`の規範要件を記載しています |
+| [標準群の入口](spec/reading-pack-spec.ja.md) | 形式、制作、参照実装の境界を説明します |
+| [形式仕様](spec/reading-pack-format-spec.ja.md) | Reading Pack成果物の規範要件です |
+| [制作標準](spec/reading-pack-production-standard.ja.md) | Level、工程、評価、公開適合の規範要件です |
+| [参照実装プロファイル](spec/reading-pack-reference-implementation.ja.md) | このtoolkit固有の公開契約です |
 | [セキュリティ方針](SECURITY.md) | 脅威境界と脆弱性の報告方法を記載しています |
 
 現行CLIは`reading-pack --help`または`reading-pack COMMAND --help`で確認できます。

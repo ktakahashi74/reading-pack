@@ -1,5 +1,7 @@
 # Schemas
 
+These schemas are the machine-readable contract of the `reading-pack` reference implementation. They are not the serialization of the final Markdown artifact and are not required for independent [Reading Pack Format](../spec/reading-pack-format-spec.en.md) conformance. The [Production Standard](../spec/reading-pack-production-standard.en.md) is tool-neutral; a producer using this toolkit uses these schemas as its implementation evidence.
+
 The schemas define three boundaries: canonical project data, body-free planning records, and private review records. The table below is the shortest route to the right file.
 
 | Schema | What it describes |

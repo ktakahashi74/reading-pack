@@ -15,7 +15,7 @@ Runtime code uses the Python standard library plus the bounded `jsonschema` depe
 ## Change requirements
 
 - Add tests for behavior changes and failure cases.
-- Keep Japanese and English requirement IDs and section structures aligned.
+- Keep Japanese and English requirement IDs and section structures aligned within every standards-suite and reference-profile document.
 - Use synthetic fixtures. Never contribute an unpublished manuscript, book-specific private evaluation answer, credential, local absolute path, or copyrighted book passage.
 - Importers must extract structure only and document archive, encoding, entity, path, and size limits.
 - Keep generated files deterministic; do not use current time, random values, locale-dependent ordering, or network results during build.

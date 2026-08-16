@@ -42,8 +42,8 @@ class CompanionSourceTests(unittest.TestCase):
     def test_undeclared_project_retains_exact_pre_feature_output(self) -> None:
         config = load_config(self.project)
         expected = {
-            "ja": "1b614fa46d5598ee3a0c5de30d1c387949cdf61341ec24c1c839c4285f5727da",
-            "en": "bb16ed32f72c218f60e01f370bffe765c33adc2f37aa190fabe064618076a979",
+            "ja": "5e2e093a56f0cc3dddd9ea7d14cb2e34fff14e16e979323ae5aca8f43a5f6755",
+            "en": "7c01d8ebf74e962a8ba4a3d5f0ec8b59262f9537c18fa8765b9d6840f5c90e0a",
         }
         for language, digest in expected.items():
             rendered = render_pack(

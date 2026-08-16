@@ -6,6 +6,8 @@ A Conversational Edition is a book form intended for dialogue through an AI inte
 
 The pack behaves like a librarian. It locates material, reports approved summaries, distinguishes kinds of claims, corrects recorded misreadings, and returns the reader to the book. It must not become a compressed substitute for the book.
 
+The [format specification](../spec/reading-pack-format-spec.en.md) for the artifact is separate from the [production standard](../spec/reading-pack-production-standard.en.md) for making it. The Python toolkit's CLI and internals belong only to the [reference implementation profile](../spec/reading-pack-reference-implementation.en.md). Format conformance, production conformance, and tool identity are displayed independently.
+
 ## Non-reconstruction
 
 The central information-minimization test is: can an AI given the public bundle write something that satisfies the role of the book? A passing bundle states what a chapter addresses and the author's approved position, but omits the argument sequence, examples, metaphors, prose, and paragraph-level coverage. The human review applies to the pack together with every public derivative, not to one file in isolation.
@@ -14,9 +16,9 @@ Instructions in SYS are quality guidance, not access control. A later user instr
 
 ## Production levels
 
-- Level 1 contains bibliography, extracted structure, navigation indexes, references, deterministic assembly, and editorial checking.
-- Level 2 adds reviewed summaries, certainty categories, people, misreadings, AI instructions, model evaluation, and author approval.
-- Level 3 adds a canonical claim set with evidence categories and falsification or revision conditions.
+- Level 1 contains bibliography and chapter/section navigation, with human review of structure, rights, non-reconstruction, and publication.
+- Level 2 adds book-appropriate summaries, people or term indexes, reading issues or references, with review of content, attribution, and qualifications.
+- Level 3 adds canonical claims separated into descriptive and normative layers and, when used, certainty categories and falsification or revision conditions.
 
 Projects may omit optional modules that do not fit the book. Fiction need not imitate a scientific canon; a scholarly monograph need not invent a people index.
 

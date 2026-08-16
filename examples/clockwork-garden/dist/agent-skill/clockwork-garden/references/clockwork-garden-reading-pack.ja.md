@@ -78,7 +78,9 @@ REF-01: https://example.com/clockwork-garden/ | 公式ページ | review=approve
 
 ## META | 版・利用条件
 
-仕様: Reading Pack Specification 1.0-draft
+形式適合: Reading Pack Format 1.0-draft conformant
+制作標準の対象: Reading Pack Production 1.0-draft Level 3 beta
+生成器: reading-pack toolkit 0.5.0
 製作等級: 3
 品質プロファイル: nonfiction-reading (required)
 対象範囲: complete synthetic example
