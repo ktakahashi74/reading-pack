@@ -6,7 +6,7 @@ Reading Packは、書籍をAIと読むための短い案内ファイルを作る
 
 読解パックの役割は、読者を原著へ戻すことにあります。書籍本文の複製や圧縮版は作りません。著者や編集者が確認した構造化データから毎回同じファイルを生成し、生成物の手編集、古くなった翻訳、公開承認の不足を検出します。
 
-> **開発状況：** ツールはv0.5.0（alpha）です。形式仕様と制作標準は`1.0-draft`で、制作標準はbetaとして運用しています。Python 3.11–3.14で検査しています。草案期間中は互換性のない変更が入る可能性があります。
+> **開発状況：** ツールはv0.6.0（alpha）です。形式仕様と制作標準は`1.0-draft`で、制作標準はbetaとして運用しています。Python 3.11–3.14で検査しています。草案期間中は互換性のない変更が入る可能性があります。
 
 ## 公開標準
 
@@ -14,7 +14,7 @@ Reading Packの公開規範は三層に分かれています。第一が完成�
 
 - [Reading Pack形式仕様 1.0-draft](spec/reading-pack-format-spec.ja.md)：読者へ渡す単一Markdownの構造と意味を定めます。
 - [Reading Pack制作標準 1.0-draft（beta）](spec/reading-pack-production-standard.ja.md)：Level 1〜3、W0〜W13、根拠、著者レビュー、評価、公開条件を定めます。
-- [reading-pack参照実装プロファイル 0.5.0（alpha）](spec/reading-pack-reference-implementation.ja.md)：このツール固有のプロジェクト構成、CLI、取り込み、トランザクション、プラグイン境界を説明します。
+- [reading-pack参照実装プロファイル 0.6.0（alpha）](spec/reading-pack-reference-implementation.ja.md)：このツール固有のプロジェクト構成、CLI、取り込み、トランザクション、プラグイン境界を説明します。
 
 形式仕様と制作標準は、高橋恒一が2026年に策定し、CC BY 4.0で公開しています。改変、独自実装、商用の読解パック制作サービスに利用できます。三層の関係と推奨引用は[Reading Pack標準群](spec/reading-pack-spec.ja.md)にまとめました。
 
@@ -114,6 +114,23 @@ reading-pack agent-skill check --project examples/clockwork-garden --release
 
 上のコマンドは、日英の読解パック、任意のAgent Skillディレクトリ、ZIPが、正本から再生成した結果とバイト単位で一致するかを検査します。
 
+### 任意の搬送adapter
+
+完全なMarkdown一ファイルが、主要かつportableな成果物です。このファイルが`check`に合格した後、搬送経路別のcopy、実験的Web lazy bundle、初回一URLを維持する`web-core-index-v2`のcoreと質問時取得の遅延モジュールを、別directoryへ生成できます。
+
+```sh
+reading-pack delivery measure --project examples/clockwork-garden --lang all --json
+reading-pack delivery build --project examples/clockwork-garden --lang all \
+  --base-url https://staging.example/reading-packs/clockwork-garden \
+  --output /tmp/clockwork-garden-delivery
+reading-pack delivery check --project examples/clockwork-garden --lang all \
+  --base-url https://staging.example/reading-packs/clockwork-garden \
+  --output /tmp/clockwork-garden-delivery
+reading-pack delivery probes --output /tmp/reading-pack-probes
+```
+
+これらのcommandはmodelを呼ばず、公開も行いません。正準Packがstale、record分割が必要、byte・character・part上限を超過する場合、`build`は失敗します。Web adapterはproduct別・日付付きの実機評価に合格した場合だけ広告し、adapterの失敗で完全Packを失効させません。詳しくは[Portable-first配布戦略](docs/reading-pack-delivery-strategy.ja.md)、[Web搬送層設計](docs/reading-pack-web-delivery-design.ja.md)、[one-touch core/遅延モジュール設計](docs/reading-pack-web-core-index-v2-design.ja.md)を参照してください。
+
 ## 公開例
 
 - [『AGI―人間を超える知能は文明をいかに変容させるか』](https://koichi-takahashi.me/agibook/)（高橋恒一、講談社選書メチエ、2026年）
@@ -192,6 +209,7 @@ PDFから得た章節構造は必ず人が確認します。スキャンや複�
 | [著者レビュー](docs/author-review.ja.md) | 修正と承認を一つのMarkdownへ記録します |
 | [品質保証](docs/quality-pipeline.ja.md) | モデルに依存しない生成、根拠検査、欠落確認、候補処理を説明します |
 | [Agent Skills配布](docs/agent-skills.ja.md) | 既存の読解パックを対応環境向けにまとめます |
+| [Portable-first配布戦略](docs/reading-pack-delivery-strategy.ja.md) | 一ファイルの正準性を保ち、任意の搬送adapterを評価します |
 | [標準群の入口](spec/reading-pack-spec.ja.md) | 形式、制作、参照実装の境界を説明します |
 | [形式仕様](spec/reading-pack-format-spec.ja.md) | 読解パック成果物の規範要件です |
 | [制作標準](spec/reading-pack-production-standard.ja.md) | 等級、工程、評価、公開適合の規範要件です |

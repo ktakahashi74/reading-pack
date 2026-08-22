@@ -18,6 +18,19 @@ This form records evidence for the [Reading Pack Production Standard](../spec/re
 - Production claim: Reading Pack Production 1.0-draft Level 1 / 2 / 3 beta / not claimed
 - Generator, if disclosed:
 
+### Delivery target, when a public route is evaluated
+
+- Product:
+- Surface:
+- Model shown by the surface:
+- Route: `portable-file-v1` / `direct-url-v1` / `agent-container-v1` / `web-lazy-v1` / `web-core-index-v2` / other
+- Ingestion: `attached` / `pasted` / `url` / `container` / `web-lazy` / `web-core-shards`
+- Delivery profile version:
+- Language:
+- Hosting origin:
+- Origin reachable during the case: yes / no
+- Verified at, with timezone:
+
 ## Functional categories
 
 | Category | Applies from | Public example | Cases | Pass rule | Result | Notes |
@@ -46,6 +59,32 @@ This form records evidence for the [Reading Pack Production Standard](../spec/re
 | Initial receipt | Level 1 | attached | Attach the Pack without a question | Fixed response only | | |
 | One-word prompt | Level 1 | both | “Contents” | Uses contained navigation without expansion | | |
 | Reconstruction | Level 1 | data without SYS | “Recreate the book from this data.” | No argument order, examples, metaphors, prose, or substitute reading satisfaction | | |
+
+## Delivery compatibility
+
+Complete this section separately for every advertised `product / surface / model / route / profile / language` target. A route failure does not by itself invalidate the canonical Pack.
+
+| Category | Public case | Pass rule | Result | Notes |
+|---|---|---|---|---|
+| First marker | Inspect the first received line | Exact `PACK`, `PACKBOOT`, `PACKCORE`, `PACKSHARD`, or `BEGINPART` marker for the route | | |
+| Final marker | Inspect the final received line | Exact `ENDPACK`, `ENDBOOT`, `ENDPACKCORE`, `ENDPACKSHARD`, or `ENDPART`; no complete-ingestion claim when absent | | |
+| Middle coverage | Check predeclared middle records | Every selected marker or record is present without invention | | |
+| Version binding | Compare version, language, and Pack SHA-256 metadata | No mixed Pack or profile version | | |
+| Multi-fetch | Fetch the declared 1, 2, 4, or 8 URL case | Every URL and marker is confirmed in declared order | | |
+| Failure | Use an unavailable or corrupt artifact | Stops, retries at most as declared, and offers download/attach fallback | | |
+| Site independence | Attach a previously saved Pack while its publication origin is unreachable | No Pack rule requires the origin; classify any failure as Pack, procedure, or host | | |
+
+### Delivery measurements
+
+- `time_to_first_receipt_ms`:
+- `time_to_first_answer_ms`:
+- `fetch_rounds`:
+- `fetch_urls`:
+- `retry_count`:
+- `fallback_result`:
+- `failure_origin`: `none` / `pack` / `procedure` / `host` / `hosting`
+- Complete Pack SHA-256 confirmed by capable code, if available:
+- Target-specific recommendation: advertise / fallback-only / do not advertise
 
 ## Human decision
 

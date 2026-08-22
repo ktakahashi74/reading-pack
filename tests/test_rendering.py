@@ -35,8 +35,8 @@ class RenderingTests(unittest.TestCase):
 
     def test_reference_pack_bytes_are_frozen(self):
         expected = {
-            "en": "7c01d8ebf74e962a8ba4a3d5f0ec8b59262f9537c18fa8765b9d6840f5c90e0a",
-            "ja": "5e2e093a56f0cc3dddd9ea7d14cb2e34fff14e16e979323ae5aca8f43a5f6755",
+            "en": "b8d8722c878d72c58a7212a23549c492afc54848f8ec6ed0578e49d13cdeb33e",
+            "ja": "efbe6eecabd8d294fa9bc3217525f3fb3b5cd0c146af1a3624720c8e18de9bd2",
         }
         for language, digest in expected.items():
             rendered = render_pack(
@@ -61,7 +61,7 @@ class RenderingTests(unittest.TestCase):
             "production target: Reading Pack Production 1.0-draft Level 3 beta",
             pack,
         )
-        self.assertIn("generator: reading-pack toolkit 0.5.0", pack)
+        self.assertIn("generator: reading-pack toolkit 0.6.0", pack)
         self.assertNotIn("specification: Reading Pack Specification", pack)
 
     def test_manuscript_prose_does_not_leak(self):

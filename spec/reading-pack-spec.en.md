@@ -12,7 +12,7 @@ The Japanese version is canonical. The English version has the same structure an
 |---|---|---|---|
 | [Reading Pack Format Specification](reading-pack-format-spec.en.md) | Structure, semantics, and safety boundary of the single Markdown delivered to readers | Which tool or production process created it | `Reading Pack Format 1.0-draft conformant` |
 | [Reading Pack Production Standard](reading-pack-production-standard.en.md) | Levels 1–3, W0–W13, evidence, review, evaluation, and publication gates | A programming language, CLI, or internal implementation | `Reading Pack Production 1.0-draft Level 2 beta` |
-| [reading-pack Reference Implementation Profile](reading-pack-reference-implementation.en.md) | This repository's project format, CLI, import, transaction, and plugin boundaries | Conditions another implementation must meet to claim Reading Pack conformance | `Built with reading-pack toolkit 0.5.0` |
+| [reading-pack Reference Implementation Profile](reading-pack-reference-implementation.en.md) | This repository's project format, CLI, import, transaction, and plugin boundaries | Conditions another implementation must meet to claim Reading Pack conformance | `Built with reading-pack toolkit 0.6.0` |
 
 ## Independent conformance
 

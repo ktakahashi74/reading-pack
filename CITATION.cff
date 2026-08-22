@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use the toolkit or implement the Reading Pack standards suite, cite this work and name the applicable document and version."
 title: "Reading Pack: Standards suite and open-source toolkit for Conversational Editions"
 type: software
-version: 0.5.0
-date-released: 2026-08-16
+version: 0.6.0
+date-released: 2026-08-22
 authors:
   - family-names: Takahashi
     given-names: Koichi

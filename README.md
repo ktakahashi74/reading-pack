@@ -6,7 +6,7 @@ Reading Pack is an open-source toolkit for creating compact guides that help rea
 
 A Reading Pack points the reader back to the original book. It is not a reproduction or compressed substitute. The toolkit builds it reproducibly from structured data reviewed by an author or editor, then detects manual changes, stale translations, and missing publication approvals.
 
-> **Status:** The toolkit is v0.5.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
+> **Status:** The toolkit is v0.6.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
 
 ## Public standards
 
@@ -14,7 +14,7 @@ Reading Pack separates three concerns. The first is the Markdown artifact delive
 
 - [Reading Pack Format Specification 1.0-draft](spec/reading-pack-format-spec.en.md) defines the structure and meaning of the single Markdown artifact.
 - [Reading Pack Production Standard 1.0-draft (beta)](spec/reading-pack-production-standard.en.md) defines Levels 1–3, W0–W13, evidence, author review, evaluation, and publication gates.
-- [reading-pack Reference Implementation Profile 0.5.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
+- [reading-pack Reference Implementation Profile 0.6.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
 
 Koichi Takahashi authored the Format Specification and Production Standard in 2026 and publishes them under CC BY 4.0. They may be modified, independently implemented, and used in commercial Reading Pack production services. The [standards-suite overview](spec/reading-pack-spec.en.md) explains the relationship among the three documents and gives suggested citations.
 
@@ -114,6 +114,23 @@ reading-pack agent-skill check --project examples/clockwork-garden --release
 
 These commands confirm that the English and Japanese Packs, optional Agent Skill directory, and ZIP match a fresh build from the canonical source byte for byte.
 
+### Optional delivery adapters
+
+The complete Markdown file remains the primary, portable artifact. After that file passes `check`, producers may build transport-specific copies, an experimental Web-lazy bundle, and `web-core-index-v2` one-touch core plus question-routed lazy modules in a separate directory:
+
+```sh
+reading-pack delivery measure --project examples/clockwork-garden --lang all --json
+reading-pack delivery build --project examples/clockwork-garden --lang all \
+  --base-url https://staging.example/reading-packs/clockwork-garden \
+  --output /tmp/clockwork-garden-delivery
+reading-pack delivery check --project examples/clockwork-garden --lang all \
+  --base-url https://staging.example/reading-packs/clockwork-garden \
+  --output /tmp/clockwork-garden-delivery
+reading-pack delivery probes --output /tmp/reading-pack-probes
+```
+
+These commands call no model and publish nothing. `build` fails if the canonical Pack is stale, if a record would need to be split, or if a byte, character, or part budget is exceeded. A Web adapter is advertised only after dated, product-specific testing; failure never invalidates the complete Pack. See the [portable-first delivery strategy](docs/reading-pack-delivery-strategy.ja.md), [Web adapter design](docs/reading-pack-web-delivery-design.ja.md), and [one-touch core/lazy-module design](docs/reading-pack-web-core-index-v2-design.ja.md) (Japanese).
+
 ## Published example
 
 - [*AGI―人間を超える知能は文明をいかに変容させるか*](https://koichi-takahashi.me/agibook/) (Koichi Takahashi, Kodansha Sensho Metier, 2026; Japanese)
@@ -192,6 +209,7 @@ The ordinary path uses `review export --release-signoff` to place content and pu
 | [Author review](docs/author-review.en.md) | Record corrections and approval in one Markdown review |
 | [Quality pipeline](docs/quality-pipeline.en.md) | Run model-neutral generation, evidence checks, coverage review, and candidate handling |
 | [Agent Skills distribution](docs/agent-skills.en.md) | Package an existing Reading Pack for compatible hosts |
+| [Portable-first delivery strategy (Japanese)](docs/reading-pack-delivery-strategy.ja.md) | Keep the single Pack canonical while evaluating optional transport adapters |
 | [Standards overview](spec/reading-pack-spec.en.md) | Understand the format, production, and implementation boundaries |
 | [Format specification](spec/reading-pack-format-spec.en.md) | Read the normative requirements for the Reading Pack artifact |
 | [Production standard](spec/reading-pack-production-standard.en.md) | Read the normative levels, process, evaluation, and release requirements |

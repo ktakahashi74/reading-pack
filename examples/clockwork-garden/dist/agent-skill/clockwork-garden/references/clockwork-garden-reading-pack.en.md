@@ -80,7 +80,7 @@ REF-01: https://example.com/clockwork-garden/ | Official page | review=approved
 
 format conformance: Reading Pack Format 1.0-draft conformant
 production target: Reading Pack Production 1.0-draft Level 3 beta
-generator: reading-pack toolkit 0.5.0
+generator: reading-pack toolkit 0.6.0
 production level: 3
 quality profile: nonfiction-reading (required)
 scope: complete synthetic example
