@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delivery-core-index-manifest.schema.json",
+  "title": "Reading Pack one-touch core/shards delivery manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile",
+    "pack",
+    "budget",
+    "entry_prompt",
+    "core",
+    "mis",
+    "names",
+    "gloss",
+    "components"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "positiveBytes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "alias",
+        "url",
+        "sha256",
+        "bytes",
+        "characters",
+        "byte_utilization_percent",
+        "character_utilization_percent",
+        "warning"
+      ],
+      "properties": {
+        "source": { "enum": ["core.md", "mis.md", "names.md", "gloss.md"] },
+        "alias": { "enum": ["core.txt", "mis.txt", "names.txt", "gloss.txt"] },
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 96000
+        },
+        "characters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 80000
+        },
+        "byte_utilization_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "character_utilization_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "warning": { "type": "boolean" }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "artifact",
+        "block",
+        "payload_offset",
+        "payload_bytes",
+        "payload_sha256",
+        "ordinal"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "PROLOGUE",
+            "SYS",
+            "BIB",
+            "MAP",
+            "CERT",
+            "PROPS",
+            "MIS",
+            "POLICY",
+            "NAMES",
+            "GLOSS",
+            "REF",
+            "META",
+            "ENDPACK"
+          ]
+        },
+        "artifact": { "enum": ["core.md", "mis.md", "names.md", "gloss.md"] },
+        "block": { "type": "string", "pattern": "^CANONICAL_[A-Z]+$" },
+        "payload_offset": { "type": "integer", "minimum": 1 },
+        "payload_bytes": { "$ref": "#/$defs/positiveBytes" },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "ordinal": { "type": "integer", "minimum": 0, "maximum": 12 }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": { "const": 1 },
+    "profile": { "const": "web-core-index-v2" },
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "title", "version", "language", "sha256", "bytes", "url"],
+      "properties": {
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "language": { "enum": ["ja", "en"] },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "$ref": "#/$defs/positiveBytes" },
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_utf8_bytes", "max_characters", "warning_percent"],
+      "properties": {
+        "max_utf8_bytes": { "const": 96000 },
+        "max_characters": { "const": 80000 },
+        "warning_percent": { "const": 90 }
+      }
+    },
+    "entry_prompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "sha256", "bytes"],
+      "properties": {
+        "source": { "const": "entry-prompt.txt" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12288
+        }
+      }
+    },
+    "core": { "$ref": "#/$defs/artifact" },
+    "mis": { "$ref": "#/$defs/artifact" },
+    "names": { "$ref": "#/$defs/artifact" },
+    "gloss": { "$ref": "#/$defs/artifact" },
+    "components": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/component" }
+    }
+  }
+}

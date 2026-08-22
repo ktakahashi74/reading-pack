@@ -10,6 +10,13 @@ import shutil
 import sys
 from pathlib import Path
 
+from reading_pack.delivery import (
+    build_delivery,
+    check_delivery,
+    delivery_measurement,
+    generate_probes,
+    load_delivery_plan,
+)
 from reading_pack.errors import EXIT_CHECK, EXIT_IO, EXIT_OK, EXIT_VALIDATION, ReadingPackError
 from reading_pack.hashing import semantic_hash
 from reading_pack.importers import import_manuscript
@@ -133,6 +140,45 @@ def register(commands: argparse._SubParsersAction) -> None:
     check.add_argument("--lang", action="append", choices=("ja", "en", "all"))
     check.add_argument("--release", action="store_true", help="enforce rights and human-review gates")
 
+    delivery = commands.add_parser(
+        "delivery",
+        help="build and verify portable-first delivery adapters without changing the canonical Pack",
+    )
+    delivery_commands = delivery.add_subparsers(dest="delivery_command", required=True)
+    delivery_build = delivery_commands.add_parser(
+        "build", help="build an immutable Web Delivery Bundle from fresh canonical output"
+    )
+    delivery_build.add_argument("--project", type=Path, default=Path.cwd())
+    delivery_build.add_argument("--lang", action="append", choices=("ja", "en", "all"))
+    delivery_build.add_argument(
+        "--base-url",
+        required=True,
+        help="public collection URL through the Pack slug, before the SHA-256 directory",
+    )
+    delivery_build.add_argument("--plan", type=Path)
+    delivery_build.add_argument(
+        "--output",
+        type=Path,
+        help="bundle root (default: PROJECT/dist/delivery); use a separate root for staging",
+    )
+    delivery_check = delivery_commands.add_parser(
+        "check", help="regenerate a bundle separately and compare every file byte-for-byte"
+    )
+    delivery_check.add_argument("--project", type=Path, default=Path.cwd())
+    delivery_check.add_argument("--lang", action="append", choices=("ja", "en", "all"))
+    delivery_check.add_argument("--base-url", required=True)
+    delivery_check.add_argument("--plan", type=Path)
+    delivery_check.add_argument("--output", type=Path)
+    delivery_measure = delivery_commands.add_parser(
+        "measure", help="report canonical Pack byte size, identity, freshness, and ENDPACK completeness"
+    )
+    delivery_measure.add_argument("--project", type=Path, default=Path.cwd())
+    delivery_measure.add_argument("--lang", action="append", choices=("ja", "en", "all"))
+    delivery_measure.add_argument("--json", action="store_true")
+    delivery_probes = delivery_commands.add_parser(
+        "probes", help="generate exact-size, multi-fetch, trust, and corruption probes"
+    )
+    delivery_probes.add_argument("--output", type=Path, required=True)
 
     doctor = commands.add_parser("doctor", help="diagnose the local offline environment")
     doctor.add_argument("--project", type=Path, default=Path.cwd())
@@ -174,6 +220,10 @@ def register(commands: argparse._SubParsersAction) -> None:
     validate.set_defaults(_handler=command_validate)
     build.set_defaults(_handler=command_build)
     check.set_defaults(_handler=command_check)
+    delivery_build.set_defaults(_handler=command_delivery_build)
+    delivery_check.set_defaults(_handler=command_delivery_check)
+    delivery_measure.set_defaults(_handler=command_delivery_measure)
+    delivery_probes.set_defaults(_handler=command_delivery_probes)
     doctor.set_defaults(_handler=command_doctor)
     link.set_defaults(_handler=command_link_translations)
     sources.set_defaults(_handler=command_sources)
@@ -395,6 +445,95 @@ def command_check(args: argparse.Namespace) -> int:
         return EXIT_CHECK
     mode = "release" if args.release else "technical"
     print(f"{mode} check passed")
+    return EXIT_OK
+
+
+def _delivery_output(project: Path, value: Path | None) -> Path:
+    if value is None:
+        return project / "dist" / "delivery"
+    return value.resolve() if value.is_absolute() else (project / value).resolve()
+
+
+def _delivery_plan(project: Path, value: Path | None) -> dict:
+    if value is not None:
+        return load_delivery_plan(value.resolve())
+    default = project / "delivery-plan.json"
+    return load_delivery_plan(default if default.is_file() else None)
+
+
+def command_delivery_build(args: argparse.Namespace) -> int:
+    project = find_project(args.project)
+    config, data_by_lang = _validated(project)
+    languages = selected_languages(config, _languages(args.lang))
+    output = _delivery_output(project, args.output)
+    builds = build_delivery(
+        project,
+        languages,
+        config,
+        data_by_lang,
+        base_url=args.base_url,
+        output_root=output,
+        plan=_delivery_plan(project, args.plan),
+    )
+    for build in builds:
+        print(
+            f"built {build.language} {build.pack_sha256} "
+            f"at {build.directory}"
+        )
+    return EXIT_OK
+
+
+def command_delivery_check(args: argparse.Namespace) -> int:
+    project = find_project(args.project)
+    config, data_by_lang = _validated(project)
+    languages = selected_languages(config, _languages(args.lang))
+    builds = check_delivery(
+        project,
+        languages,
+        config,
+        data_by_lang,
+        base_url=args.base_url,
+        output_root=_delivery_output(project, args.output),
+        plan=_delivery_plan(project, args.plan),
+    )
+    for build in builds:
+        print(f"OK delivery byte-identical: {build.language} {build.pack_sha256}")
+    print("delivery check passed")
+    return EXIT_OK
+
+
+def command_delivery_measure(args: argparse.Namespace) -> int:
+    project = find_project(args.project)
+    config, data_by_lang = _validated(project)
+    languages = selected_languages(config, _languages(args.lang))
+    rows = delivery_measurement(project, languages, config, data_by_lang)
+    if args.json:
+        print(json.dumps(rows, ensure_ascii=False, indent=2))
+    else:
+        for row in rows:
+            core_index = row["core_index"]
+            warnings = ",".join(
+                name
+                for name in ("core", "mis", "names", "gloss")
+                if core_index[f"{name}_warning"]
+            ) or "none"
+            artifacts = " ".join(
+                f"{name}={core_index[f'{name}_utf8_bytes']}B/"
+                f"{core_index[f'{name}_characters']}ch"
+                for name in ("core", "mis", "names", "gloss")
+            )
+            print(
+                f"{row['language']}: {row['characters']} chars; {row['utf8_bytes']} bytes; "
+                f"sha256={row['sha256']}; fresh={str(row['fresh']).lower()}; "
+                f"endpack={str(row['complete_endpack']).lower()}; "
+                f"{core_index['profile']} {artifacts} warnings={warnings}"
+            )
+    return EXIT_OK
+
+
+def command_delivery_probes(args: argparse.Namespace) -> int:
+    manifest = generate_probes(args.output.resolve())
+    print(f"built probes: {manifest}")
     return EXIT_OK
 
 

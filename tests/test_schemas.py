@@ -25,7 +25,7 @@ class SchemaTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1] / "schema"
         paths = sorted(root.glob("*.schema.json"))
         self.assertEqual({path.name for path in paths}, set(SCHEMA_NAMES))
-        self.assertEqual(len(paths), 29)
+        self.assertEqual(len(paths), 32)
         self.assertEqual(set(schemas().schemas), set(SCHEMA_NAMES))
         for path in paths:
             schema = json.loads(path.read_text(encoding="utf-8"))
@@ -38,7 +38,7 @@ class SchemaTests(unittest.TestCase):
         sources = "\n".join(path.read_text(encoding="utf-8") for path in root.rglob("*.py"))
         for schema_name in SCHEMA_NAMES:
             with self.subTest(schema=schema_name):
-                # One occurrence declares the closed 28-schema catalog; a
+                # One occurrence declares the closed schema catalog; a
                 # second occurrence must connect the schema to an artifact path.
                 self.assertGreaterEqual(sources.count(f'"{schema_name}"'), 2)
 

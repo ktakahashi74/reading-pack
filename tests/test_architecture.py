@@ -27,6 +27,7 @@ class ArchitectureBoundaryTests(unittest.TestCase):
         )
         choices = set(command_action.choices)
         self.assertIn("build", choices)
+        self.assertIn("delivery", choices)
         self.assertIn("review", choices)
         self.assertNotIn("candidates", choices)
         self.assertNotIn("catalog", choices)

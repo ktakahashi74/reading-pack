@@ -1,6 +1,6 @@
-PROFILE | name=reading-pack Reference Implementation Profile | version=0.5.0 | status=alpha | language=en | primary=false | date=2026-08-16 | author=Koichi Takahashi | code_license=MIT | document_license=CC BY 4.0
+PROFILE | name=reading-pack Reference Implementation Profile | version=0.6.0 | status=alpha | language=en | primary=false | date=2026-08-22 | author=Koichi Takahashi | code_license=MIT | document_license=CC BY 4.0
 
-# reading-pack Reference Implementation Profile 0.5.0 (alpha)
+# reading-pack Reference Implementation Profile 0.6.0 (alpha)
 
 This document describes the public contract of the Python implementation in this repository. It is not a condition for another implementation to claim Reading Pack format or production conformance. The Japanese version is canonical.
 
@@ -28,7 +28,7 @@ This document describes the public contract of the Python implementation in this
 
 ## 3. Public CLI
 
-**RPI-009** The Python 3.11+ `reading-pack` CLI provides at least `init`, `import-plan`, `import-apply`, `validate`, `build`, `check`, `doctor`, and `review export|status|plan|apply`. Commands return purpose-specific nonzero exit codes and explainable diagnostics.
+**RPI-009** The Python 3.11+ `reading-pack` CLI provides at least `init`, `import-plan`, `import-apply`, `validate`, `build`, `check`, `doctor`, `review export|status|plan|apply`, and `delivery build|check|measure|probes`. Commands return purpose-specific nonzero exit codes and explainable diagnostics.
 
 **RPI-010** `init` rejects a non-empty destination by default. A canonical mutation separates a read-only plan from explicit application and does not overwrite existing files unconditionally.
 
@@ -56,7 +56,9 @@ This document describes the public contract of the Python implementation in this
 
 **RPI-019** Public tests are offline, use synthetic material only, and cover schemas, diagnostic compatibility, byte reproducibility, bilingual correspondence, transaction rollback, path boundaries, and long-copy prevention. Live-model evaluation is not a mandatory CI gate.
 
-**RPI-020** Implementations of this profile MAY display `Built with reading-pack toolkit 0.5.0`. This does not replace a format- or production-conformance claim.
+**RPI-020** Implementations of this profile MAY display `Built with reading-pack toolkit 0.6.0`. This does not replace a format- or production-conformance claim.
+
+**RPI-021** A Delivery Adapter is an optional deterministic derivative of a completed canonical Pack, not a canonical source, format-conformance condition, or approval unit. `delivery check` verifies canonical freshness, byte-identical aliases, manifests, markers, version and language binding, budgets, and exact reconstruction of every component. An over-budget artifact fails without truncation, and the command itself performs no publication.
 
 ## 7. Change management
 

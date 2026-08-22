@@ -12,7 +12,7 @@ Reading Packに関する公開規範は、成果物、制作工程、参照実�
 |---|---|---|---|
 | [Reading Pack形式仕様](reading-pack-format-spec.ja.md) | 読者へ渡す単一Markdownの構造、意味、安全上の境界 | どのツールで、どの工程を経て作ったか | `Reading Pack Format 1.0-draft conformant` |
 | [Reading Pack制作標準](reading-pack-production-standard.ja.md) | Level 1〜3、W0〜W13、根拠、レビュー、評価、公開条件 | 特定の言語、CLI、内部実装 | `Reading Pack Production 1.0-draft Level 2 beta` |
-| [reading-pack参照実装プロファイル](reading-pack-reference-implementation.ja.md) | このリポジトリのproject形式、CLI、取込、transaction、plugin境界 | 他社実装がReading Pack適合を名乗るための条件 | `Built with reading-pack toolkit 0.5.0` |
+| [reading-pack参照実装プロファイル](reading-pack-reference-implementation.ja.md) | このリポジトリのproject形式、CLI、取込、transaction、plugin境界 | 他社実装がReading Pack適合を名乗るための条件 | `Built with reading-pack toolkit 0.6.0` |
 
 ## 適合性の分離
 

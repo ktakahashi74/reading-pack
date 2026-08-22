@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delivery-plan.schema.json",
+  "title": "Reading Pack delivery profile plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile",
+    "entry_prompt_max_utf8_bytes",
+    "bootstrap_max_utf8_bytes",
+    "manifest_max_utf8_bytes",
+    "part_max_utf8_bytes",
+    "maximum_parts",
+    "initial_fetch_urls"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "profile": { "const": "web-lazy-v1" },
+    "entry_prompt_max_utf8_bytes": {
+      "type": "integer",
+      "minimum": 4096,
+      "maximum": 65536
+    },
+    "bootstrap_max_utf8_bytes": {
+      "type": "integer",
+      "minimum": 8192,
+      "maximum": 131072
+    },
+    "manifest_max_utf8_bytes": {
+      "type": "integer",
+      "minimum": 4096,
+      "maximum": 131072
+    },
+    "part_max_utf8_bytes": {
+      "type": "integer",
+      "minimum": 4096,
+      "maximum": 1048576
+    },
+    "maximum_parts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 512
+    },
+    "initial_fetch_urls": { "const": 2 }
+  }
+}

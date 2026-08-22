@@ -4,6 +4,19 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-22
+
+### Added
+
+- Portable-first delivery tooling with `delivery build`, `check`, `measure`, and `probes`; byte-identical Markdown/text Pack copies; versioned portable, direct-URL, Web-lazy, and one-touch `web-core-index-v2` prompts; manifest/bootstrap/module generation; record-boundary splitting; byte and character budgets; immutable URL checks; and full reconstruction validation.
+- A one-touch core/shards adapter that keeps initial delivery to one URL, defers exact `MIS`, `NAMES`, and `GLOSS` sections to question-routed URLs, and reconstructs the unchanged canonical Pack byte for byte from manifest offsets.
+- Draft 2020-12 schemas for delivery plans and manifests, synthetic size/chain/trust/corruption probes, and an AGI-book staging evaluation that keeps the canonical single-file Pack independent from optional Web adapters.
+
+### Changed
+
+- Added target-specific delivery guidance: one-touch core plus lazy modules for ChatGPT, complete-Pack direct loading for compatible Claude Chat targets, and complete-Pack attachment for Gemini.
+- Recorded the logged-in ChatGPT Chat run-008 success and the rejected run-009 two-hop Entry Prompt fetch, preserving both experiments as compatibility evidence.
+
 ## [0.5.0] — 2026-08-16
 
 ### Added
