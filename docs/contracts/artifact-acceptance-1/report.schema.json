@@ -1,0 +1,702 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "record_id",
+    "created_at",
+    "previous_record",
+    "reassessment_of",
+    "bindings",
+    "acceptance",
+    "execution",
+    "model_diagnostics",
+    "author_approval",
+    "resources"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "artifact-acceptance-1"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "previous_record": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/artifact"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reassessment_of": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/artifact"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bindings": {
+      "type": "object",
+      "required": [
+        "run_manifest",
+        "candidate_manifest",
+        "source_manifest",
+        "instruction_template",
+        "acceptance_criteria",
+        "delivery_manifest"
+      ],
+      "properties": {
+        "run_manifest": {
+          "$ref": "#/$defs/artifact"
+        },
+        "candidate_manifest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_manifest": {
+          "$ref": "#/$defs/artifact"
+        },
+        "instruction_template": {
+          "$ref": "#/$defs/artifact"
+        },
+        "acceptance_criteria": {
+          "$ref": "#/$defs/artifact"
+        },
+        "delivery_manifest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptance": {
+      "type": "object",
+      "required": [
+        "status",
+        "coverage",
+        "confirmed_defect_ids",
+        "unresolved_ids",
+        "report"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "inconclusive",
+            "not_run"
+          ]
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "not_run"
+          ]
+        },
+        "confirmed_defect_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "unresolved_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "report": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "not_run"
+            },
+            "coverage": {
+              "const": "not_run"
+            },
+            "confirmed_defect_ids": {
+              "maxItems": 0
+            },
+            "unresolved_ids": {
+              "maxItems": 0
+            },
+            "report": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "pass"
+            },
+            "coverage": {
+              "const": "complete"
+            },
+            "confirmed_defect_ids": {
+              "maxItems": 0
+            },
+            "unresolved_ids": {
+              "maxItems": 0
+            },
+            "report": {
+              "$ref": "#/$defs/artifact"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "fail"
+            },
+            "coverage": {
+              "enum": [
+                "complete",
+                "incomplete"
+              ]
+            },
+            "confirmed_defect_ids": {
+              "minItems": 1
+            },
+            "report": {
+              "$ref": "#/$defs/artifact"
+            }
+          }
+        },
+        {
+          "allOf": [
+            {
+              "properties": {
+                "status": {
+                  "const": "inconclusive"
+                },
+                "coverage": {
+                  "enum": [
+                    "complete",
+                    "incomplete"
+                  ]
+                },
+                "confirmed_defect_ids": {
+                  "maxItems": 0
+                },
+                "report": {
+                  "$ref": "#/$defs/artifact"
+                }
+              }
+            },
+            {
+              "anyOf": [
+                {
+                  "properties": {
+                    "coverage": {
+                      "const": "incomplete"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "unresolved_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "status",
+        "stop_reasons"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ready",
+            "running",
+            "completed",
+            "stopped"
+          ]
+        },
+        "stop_reasons": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "deadline_exceeded",
+              "budget_exhausted",
+              "phase_budget_exhausted",
+              "cost_unknown",
+              "cost_allowance_exceeded",
+              "input_constraint",
+              "provider_error",
+              "invalid_response",
+              "interrupted",
+              "integrity_error",
+              "superseded"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "status": {
+            "const": "stopped"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "stop_reasons": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "stop_reasons": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    "model_diagnostics": {
+      "type": "object",
+      "required": [
+        "status",
+        "report"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_run",
+            "incomplete",
+            "completed"
+          ]
+        },
+        "report": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "status": {
+            "const": "not_run"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "report": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "report": {
+            "$ref": "#/$defs/artifact"
+          }
+        }
+      }
+    },
+    "author_approval": {
+      "type": "object",
+      "required": [
+        "status",
+        "candidate_manifest_sha256",
+        "review",
+        "decision",
+        "question_ids"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_requested",
+            "pending",
+            "needs_decision",
+            "approved",
+            "rejected",
+            "changes_requested"
+          ]
+        },
+        "candidate_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/artifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "question_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "not_requested"
+            },
+            "candidate_manifest_sha256": {
+              "type": "null"
+            },
+            "review": {
+              "type": "null"
+            },
+            "decision": {
+              "type": "null"
+            },
+            "question_ids": {
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "pending"
+            },
+            "candidate_manifest_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "review": {
+              "$ref": "#/$defs/artifact"
+            },
+            "decision": {
+              "type": "null"
+            },
+            "question_ids": {
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "needs_decision"
+            },
+            "candidate_manifest_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "review": {
+              "$ref": "#/$defs/artifact"
+            },
+            "decision": {
+              "type": "null"
+            },
+            "question_ids": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "enum": [
+                "approved",
+                "rejected",
+                "changes_requested"
+              ]
+            },
+            "candidate_manifest_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "review": {
+              "$ref": "#/$defs/artifact"
+            },
+            "decision": {
+              "$ref": "#/$defs/artifact"
+            }
+          }
+        }
+      ]
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "budget_scope_id",
+        "ledger"
+      ],
+      "properties": {
+        "budget_scope_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ledger": {
+          "$ref": "#/$defs/artifact"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/reading-pack/contracts/artifact-acceptance-1/report.schema.json",
+  "title": "Artifact acceptance report contract (M1; not connected to the production runner)",
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*:)[^\\s]+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "acceptance": {
+            "properties": {
+              "status": {
+                "const": "pass"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "bindings": {
+            "properties": {
+              "candidate_manifest": {
+                "$ref": "#/$defs/artifact"
+              },
+              "delivery_manifest": {
+                "$ref": "#/$defs/artifact"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "acceptance": {
+            "properties": {
+              "coverage": {
+                "enum": [
+                  "complete",
+                  "incomplete"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "bindings": {
+            "properties": {
+              "candidate_manifest": {
+                "$ref": "#/$defs/artifact"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "status": {
+                "const": "ready"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "acceptance": {
+            "properties": {
+              "status": {
+                "const": "not_run"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "author_approval": {
+            "properties": {
+              "status": {
+                "const": "pending"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "acceptance": {
+            "properties": {
+              "status": {
+                "const": "pass"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "author_approval": {
+            "properties": {
+              "status": {
+                "const": "needs_decision"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "acceptance": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "fail",
+                  "inconclusive"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "author_approval": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "pending",
+                  "needs_decision",
+                  "approved",
+                  "rejected",
+                  "changes_requested"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "bindings": {
+            "properties": {
+              "candidate_manifest": {
+                "$ref": "#/$defs/artifact"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+from reading_pack import __version__
 from reading_pack.companion import companion_findings
 from reading_pack.hashing import semantic_hash
 from reading_pack.project import load_config, load_language_data
@@ -52,7 +53,11 @@ class CompanionSourceTests(unittest.TestCase):
                 config,
                 load_language_data(self.project, language),
             )
-            self.assertEqual(hashlib.sha256(rendered.encode()).hexdigest(), digest)
+            normalized = rendered.replace(
+                f"reading-pack toolkit {__version__}",
+                "reading-pack toolkit 0.6.0",
+            )
+            self.assertEqual(hashlib.sha256(normalized.encode()).hexdigest(), digest)
             self.assertNotIn("C1:", rendered)
             self.assertNotIn("relation=official_companion", rendered)
 

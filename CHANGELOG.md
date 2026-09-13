@@ -4,6 +4,67 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.7.0] — 2026-09-13
+
+### Fixed and added
+
+- Separate deliverables from private run evidence: `pipeline deliver --output` (default `<run>-delivery/` beside the run) and `pipeline export` write only the Pack, quality reports and canonical data with a hash manifest; manuscript, exchanges and seed copies stay in the run.
+
+- Add `pipeline deliver --predecessor`: successor runs that carry a finished delivery's completed exchanges and redo only incomplete generation/evaluation jobs, with reservations for the redone work only. Add per-role reservations (`global_call_allowance_usd`, `evaluator_timeout_seconds`, `global_timeout_seconds`) and adapter salvage of final attempts rejected solely for undeclared keys, recorded as pruned paths.
+
+- Add `pipeline deliver --seed`: carry an existing project's author-provided modules (certainty, claims, misreadings, policies, names, glossary, references) unchanged while generating chapter content; bind chapters to seed ids explicitly (`--chapter-map`), keep reviewed records byte-identical under `preserve`, reset inherited approvals to draft/pending, and report per-module completeness with lost/added ids so a delivery can no longer silently drop an author-provided layer. Seedless deliveries now state that those modules are empty by construction.
+
+- Add the recommended `pipeline delivery-recipe` / `pipeline deliver` workflow: explicit source-bound outlines, fixed generation and evaluation reservations, quantitative reports without automatic quality gates, retained low-scoring/partially evaluated Packs, cumulative costs, and no automatic retry of started calls. Preserve existing contracts and artifacts.
+
+- Carry explicit pipeline manuscript scope into candidate metadata and rendered delivery; artifact runs no longer assume that supplied excerpts are complete published editions. Preserve seed scope and reject conflicting relabeling.
+
+- Add optional preregistered generator comparisons with common judging, finite execution, cumulative book budgets and conservative completion-rate comparisons. No quality saturation or Pack acceptance is inferred.
+- Correct artifact-contract documentation and CLI success states; allow omission of the unused reader and explicit zero/one repair selection.
+
+- Complete the artifact-acceptance production path through M10: version-bound instruction and local delivery inspection, finite phase reservations, one repair and full reinspection, separate candidate reassessment, append-only M1 records, hash-bound author decisions and independent workflow observations. Standard reader trials remain zero; legacy contracts and cumulative resources remain intact. Synthetic validation does not claim live-book quality or publication approval.
+
+- Align new-run acceptance with reader utility: generated questions no longer create content quotas; retain central meanings, material conditions, attribution and factual correctness, while accepting supported specific navigation for incidental details. Freeze the scope before generation and grading, bind it to workflow identity, and preserve existing study scopes on restart.
+
+- Add optional end-to-end operating envelopes, per-phase call and USD reservations, protected final-evaluation capacity, and cumulative deadlines across resumes and single-successor restarts. Refuse infeasible plans before model dispatch. Author changes do not silently open a second budget.
+- Separate unqualified research (`--experimental`) from measured production. Add preregistered workflow qualification with fresh usage receipts, retained failures, finite input scope and no unit-test-to-quality promotion. No live-book qualification certificate is supplied.
+- Preserve frozen development-question evidence when routing a repair to a distant footnote or supplement. Explain the canonical Pack scope consistently to both audit and adjudication workers.
+
+- Derive benchmark requirement bounds from the worker schema, retrieve source quotations by verified span ID, and repair rejected questions within fixed limits before freezing holdout. Add an optional pinned Claude CLI adapter with audited structured output recovery and shared call/cost guards.
+
+### 0.7.0 (alpha) preparation
+
+- Aligned generated record schemas with candidate admission while preserving hash-bound author IDs; added exact body-page heading supplementation followed by independent re-review, fixed benchmark counts, per-candidate quotation quarantine and retained adapter failure details.
+
+- Added local structure preflight before model calls, bounded vertical-PDF layout recovery, and source-bound section selection with independent review before benchmark generation. TOC/body differences and failed structure trials remain explicit.
+
+- Added the fixed `pipeline recipe/start/resume/status/finalize` workflow for manuscripts with optional author supplements, source-bound candidates, independent AI grading, bounded repairs, held-out final evaluation, resumable exchanges, author signoff and local release builds.
+- Added automatic profile selection, immutable input and adapter bindings, conservative non-regression gates, explicit failure/budget outcomes and separate delivery preflight.
+- Added synthetic end-to-end and failure/recovery tests and bilingual operating instructions. Live-book quality evaluation is recorded separately and is not implied by unit-test success.
+- Updated toolkit and reference implementation version declarations to 0.7.0. Format Specification and Production Standard remain 1.0-draft. This entry is unreleased; no release date or remote publication is asserted.
+
+### Completion reliability
+
+- Freeze finite coverage requirements; independently adjudicate audit suspicions with bounded cross-source evidence and the complete Pack. Retain optional advice without blocking reader tests, preserve material defects, and stop explicitly on unresolved evidence or a required protected-record change.
+- Compare canonical structure with the source-bound heading inventory instead of summed model estimates. Preserve numeric estimates and all decisions in private audit reports.
+
+- Support source-grounded bibliographic references without invented URLs, while preserving linked output and mandatory URLs for official companions.
+- Review changed chapter content against a bounded, hash-checked neighboring window from the same source, preserving exact evidence positions and independent approval checks.
+
+- Add explicit, hash-bound permissions for selected supplied-record draft revisions during checkpoint restart; preserve original records, author-input state and human decisions, with fresh evidence/review and later author adoption still required.
+
+- Preserve validated completed-round or stopped working-draft checkpoints and their round numbers across engine updates, retaining frozen benchmarks and source provenance while requiring fresh quality evaluation.
+- Limit chapter candidate review to new or changed content when the controller verifies unchanged structural fields; summaries, terms and spoiler scope still require independent source support.
+- Route aggregate source errors through concrete source-scoped findings, skip unrelated repair calls, group targeted repairs separately from initial generation, and allow source-reviewed context additions around protected author records without rewriting them.
+- Preserve complete Claude requests while placing stable reading context before changing identities; retain exact original and CLI input hashes for cost/cache auditing.
+- Reconcile seeded Markdown/Org outlines with nested headings and back matter while preserving supplied IDs/prose; retain human review history through explicit unapproved draft successors.
+- Run reader evaluation only after source checks pass, bind empty-summary repairs to source regions, supply development-only repair guidance, and omit protected prose only from generation contexts.
+- Enforce Author Input Package module modes before candidate review/application, evaluate populated seeds before generation, partition generation/review into bounded units, and isolate record admission from transport validation.
+- Restore omitted immutable chapter metadata without accepting changed values; remove duplicate audit content and optionally batch grades while retaining isolated one-question reader requests and case-bound evidence.
+- Apply only dependency-closed accepted candidates and add explicit pre-holdout restart with exact generation/review replay and fresh admission checks.
+- Add content-bound preparation reuse across engine updates without reusing reader answers or tested holdout suites.
+
 ## [0.6.0] — 2026-08-22
 
 ### Added

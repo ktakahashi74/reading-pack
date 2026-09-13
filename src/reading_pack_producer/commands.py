@@ -85,6 +85,9 @@ def _validated(project: Path, *, release: bool = False) -> tuple[dict, dict[str,
 
 
 def register(commands: argparse._SubParsersAction, review_commands: argparse._SubParsersAction) -> None:
+    from .pipeline_commands import register as register_pipeline
+
+    register_pipeline(commands)
     agent_skill = commands.add_parser(
         "agent-skill",
         help="build or check an optional Agent Skills-compatible distribution",

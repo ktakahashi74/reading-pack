@@ -91,6 +91,7 @@ class ExtractedBook:
     title: str
     chapters: list[dict]
     source_format: str
+    layout: dict | None = None
 
 
 def read_regular_source_bytes(path: Path, *, maximum: int = MAX_SOURCE_BYTES) -> bytes:
@@ -788,7 +789,14 @@ def extract_pdf_vertical(path: Path) -> ExtractedBook:
     extracted = extract_pdf_text(
         reconstruct_pdf_vertical_text(text), metadata_title=title
     )
-    return ExtractedBook(extracted.title, extracted.chapters, "pdf-vertical")
+    if extracted.chapters:
+        return ExtractedBook(extracted.title, extracted.chapters, "pdf-vertical")
+    from .pdf_layout import MAX_XML_BYTES, extracted_layout_book, recover_vertical_layout
+    xml = _run_pdf_tool(
+        [_pdf_tool("pdftohtml"), "-xml", "-hidden", "-i", "-stdout", str(path.resolve())],
+        "pdftohtml", max_stdout=MAX_XML_BYTES,
+    )
+    return extracted_layout_book(recover_vertical_layout(xml, text), title)
 
 
 def _safe_member_name(name: str) -> None:

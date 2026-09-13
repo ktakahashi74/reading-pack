@@ -110,7 +110,7 @@ REQUIRED_FIELDS = {
     "policies": {"id", "kind", "statement", "status"},
     "names": {"id", "name", "chapter_id", "status"},
     "glossary": {"id", "term", "chapter_id", "status"},
-    "references": {"id", "url", "label", "status"},
+    "references": {"id", "label", "status"},
 }
 
 ALLOWED_FIELDS = {
@@ -156,7 +156,7 @@ CONTENT_FIELDS = {
     "policies": ("kind", "statement"),
     "names": ("name",),
     "glossary": ("term",),
-    "references": ("label", "url"),
+    "references": ("label",),
 }
 
 LIST_FIELDS = {
@@ -760,10 +760,19 @@ def _sanitize_record(collection: str, raw_record: Any) -> tuple[dict[str, Any], 
     return record, reasons
 
 
+def _valid_record_id(collection: str, identifier: Any, *, existing: bool = False) -> bool:
+    if not isinstance(identifier, str) or not identifier or len(identifier) > 200:
+        return False
+    if UNSAFE_TEXT.search(identifier) or any(character.isspace() for character in identifier):
+        return False
+    return bool(re.fullmatch(ID_PATTERNS[collection], identifier)) or existing
+
+
 def _record_reasons(
     collection: str,
     record: Mapping[str, Any],
     chapter_ids: set[str] | None,
+    *, existing_id: bool = False,
 ) -> list[str]:
     reasons: list[str] = []
     if collection not in COLLECTIONS:
@@ -772,7 +781,7 @@ def _record_reasons(
     if missing:
         reasons.append("missing_required_field")
     identifier = record.get("id")
-    if not isinstance(identifier, str) or not re.fullmatch(ID_PATTERNS[collection], identifier):
+    if not _valid_record_id(collection, identifier, existing=existing_id):
         reasons.append("invalid_record_id")
     if record.get("status") != "draft":
         reasons.append("non_draft_record")
@@ -882,7 +891,7 @@ def _record_reasons(
         "other",
     }:
         reasons.append("invalid_policy_kind")
-    if collection == "references":
+    if collection == "references" and "url" in record:
         parsed = urlparse(str(record.get("url", "")))
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             reasons.append("invalid_reference_url")
@@ -1326,7 +1335,9 @@ def create_candidate_run(
             record_safe_to_store = False
         else:
             record, reasons = _sanitize_record(collection, raw_candidate.get("record"))
-            structural_reasons = _record_reasons(collection, record, chapter_ids)
+            identifier = record.get('id')
+            existing_id = isinstance(identifier, str) and (collection, identifier) in canonical_records
+            structural_reasons = _record_reasons(collection, record, chapter_ids, existing_id=existing_id)
             reasons.extend(structural_reasons)
             record_safe_to_store = not structural_reasons and not any(
                 reason in {"unknown_record_field", "record_too_large", "record_not_json"}
@@ -1373,7 +1384,7 @@ def create_candidate_run(
         if (
             collection not in ID_PATTERNS
             or not isinstance(record_id, str)
-            or not re.fullmatch(ID_PATTERNS[collection], record_id)
+            or not _valid_record_id(collection, record_id, existing=base is not None)
         ):
             record_id = ""
         candidate: dict[str, Any] = {
@@ -1683,7 +1694,8 @@ def load_candidate_run(path: Path, *, verify_integrity: bool = True) -> dict[str
             or (
                 candidate["record_id"]
                 and candidate.get("collection") in ID_PATTERNS
-                and not re.fullmatch(ID_PATTERNS[candidate["collection"]], candidate["record_id"])
+                and not _valid_record_id(candidate["collection"], candidate["record_id"],
+                                         existing=bool(candidate.get("base_record_sha256")))
             )
         ):
             raise ReadingPackError("candidate run contains an invalid record ID")
@@ -1703,7 +1715,7 @@ def load_candidate_run(path: Path, *, verify_integrity: bool = True) -> dict[str
                 collection not in COLLECTIONS
                 or set(record) - ALLOWED_FIELDS[collection]
                 or len(_json_bytes(record)) > MAX_RECORD_BYTES
-                or _record_reasons(collection, record, None)
+                or _record_reasons(collection, record, None, existing_id=bool(base_hash))
             ):
                 raise ReadingPackError("candidate run contains an invalid record")
             if candidate.get("record_id") != record.get("id"):
@@ -2529,7 +2541,7 @@ def apply_candidate_run(
             record["status"] = "draft"
             if "translation_status" in record:
                 record["translation_status"] = "draft"
-            reasons = _record_reasons(collection, record, future_chapters)
+            reasons = _record_reasons(collection, record, future_chapters, existing_id=existing is not None)
             if reasons:
                 raise ReadingPackError(
                     "a candidate no longer passes canonical record checks"

@@ -1,6 +1,6 @@
-PROFILE | name=reading-pack Reference Implementation Profile | version=0.6.0 | status=alpha | language=en | primary=false | date=2026-08-22 | author=Koichi Takahashi | code_license=MIT | document_license=CC BY 4.0
+PROFILE | name=reading-pack Reference Implementation Profile | version=0.7.0 | status=alpha | language=en | primary=false | date=2026-09-10 | author=Koichi Takahashi | code_license=MIT | document_license=CC BY 4.0
 
-# reading-pack Reference Implementation Profile 0.6.0 (alpha)
+# reading-pack Reference Implementation Profile 0.7.0 (alpha)
 
 This document describes the public contract of the Python implementation in this repository. It is not a condition for another implementation to claim Reading Pack format or production conformance. The Japanese version is canonical.
 
@@ -56,12 +56,18 @@ This document describes the public contract of the Python implementation in this
 
 **RPI-019** Public tests are offline, use synthetic material only, and cover schemas, diagnostic compatibility, byte reproducibility, bilingual correspondence, transaction rollback, path boundaries, and long-copy prevention. Live-model evaluation is not a mandatory CI gate.
 
-**RPI-020** Implementations of this profile MAY display `Built with reading-pack toolkit 0.6.0`. This does not replace a format- or production-conformance claim.
+**RPI-020** Implementations of this profile MAY display `Built with reading-pack toolkit 0.7.0`. This does not replace a format- or production-conformance claim.
 
 **RPI-021** A Delivery Adapter is an optional deterministic derivative of a completed canonical Pack, not a canonical source, format-conformance condition, or approval unit. `delivery check` verifies canonical freshness, byte-identical aliases, manifests, markers, version and language binding, budgets, and exact reconstruction of every component. An over-budget artifact fails without truncation, and the command itself performs no publication.
+
+**RPI-022** The optional `pipeline recipe|start|resume|status|finalize` controller freezes inputs, implementation, recipe and acceptance contract, retaining failures and cumulative resources. Default `legacy-reader-evaluation-1` uses reader and held-out final tests and builds approved artifacts locally after signoff. Explicit `artifact-acceptance-1` uses direct content, instruction and delivery inspection, at most one repair, full reinspection and an author packet. Artifact `finalize --review` only appends a JSON decision bound to the candidate hash; it does not change acceptance, activate draft policies or build approved artifacts. Neither contract deploys remotely. Optional model comparison is independent of acceptance and author approval and cannot expand its registered workflow, repetitions, cumulative cost or time limits. [Production guide](../docs/pipeline-artifact-workflow.en.md).
 
 ## 7. Change management
 
 The profile version follows the toolkit version. A change to the CLI, schemas, project format, transactions, or package boundaries updates code, bilingual documents, tests, and the synthetic example in the same release.
 
 Copyright 2026 Koichi Takahashi. Document licensed under CC BY 4.0; implementation licensed under MIT as mapped in `LICENSES/README.md`.
+
+## Generation and evaluation delivery entry
+
+`pipeline deliver` uses `generation-report-1` to deliver generated artifacts and quantitative evaluation. Scores never trigger automatic adoption or repair. Delivery completion, production conformance, author adoption and publication are separate. Existing run contracts/results remain intact. See [delivery workflow](../docs/pipeline-delivery.en.md).

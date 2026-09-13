@@ -1,0 +1,1116 @@
+{
+  "not-run": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-not-run",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": null,
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "not_run",
+      "coverage": "not_run",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": null
+    },
+    "execution": {
+      "status": "ready",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "provider-before-checks": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-provider-before-checks",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": null,
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "not_run",
+      "coverage": "not_run",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": null
+    },
+    "execution": {
+      "status": "stopped",
+      "stop_reasons": [
+        "provider_error"
+      ]
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "running-incomplete": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-running-incomplete",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "inconclusive",
+      "coverage": "incomplete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "running",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "pass": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-pass",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": {
+        "path": "delivery.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "acceptance": {
+      "status": "pass",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "defect-complete": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-defect-complete",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "fail",
+      "coverage": "complete",
+      "confirmed_defect_ids": [
+        "D-1"
+      ],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "defect-and-unfinished": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-defect-and-unfinished",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "fail",
+      "coverage": "incomplete",
+      "confirmed_defect_ids": [
+        "D-1"
+      ],
+      "unresolved_ids": [
+        "U-1"
+      ],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "stopped",
+      "stop_reasons": [
+        "deadline_exceeded"
+      ]
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "unresolved-complete": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-unresolved-complete",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "inconclusive",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [
+        "U-1"
+      ],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "budget-unfinished": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-budget-unfinished",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "inconclusive",
+      "coverage": "incomplete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "stopped",
+      "stop_reasons": [
+        "budget_exhausted"
+      ]
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "pass-reporting-interrupted": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-pass-reporting-interrupted",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": {
+        "path": "delivery.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "acceptance": {
+      "status": "pass",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "stopped",
+      "stop_reasons": [
+        "interrupted"
+      ]
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "reader-wrong-pack-pass": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-reader-wrong-pack-pass",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": {
+        "path": "delivery.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "acceptance": {
+      "status": "pass",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "completed",
+      "report": {
+        "path": "diagnostics-wrong-answer.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "reader-correct-pack-fail": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-reader-correct-pack-fail",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "fail",
+      "coverage": "complete",
+      "confirmed_defect_ids": [
+        "D-1"
+      ],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "completed",
+      "report": {
+        "path": "diagnostics-correct-answer.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "awaiting-author": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-awaiting-author",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": {
+        "path": "delivery.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "acceptance": {
+      "status": "pass",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "pending",
+      "candidate_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "review": {
+        "path": "author-review.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "approved": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-approved",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": {
+        "path": "delivery.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "acceptance": {
+      "status": "pass",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "approved",
+      "candidate_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "review": {
+        "path": "author-review.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "path": "author-decision.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "author-changes-requested": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-author-changes-requested",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": {
+        "path": "delivery.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "acceptance": {
+      "status": "pass",
+      "coverage": "complete",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "changes_requested",
+      "candidate_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "review": {
+        "path": "author-review.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "path": "author-decision.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "approved-later-defect": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-approved-later-defect",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": {
+      "path": "previous-acceptance.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "fail",
+      "coverage": "complete",
+      "confirmed_defect_ids": [
+        "D-1"
+      ],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "approved",
+      "candidate_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "review": {
+        "path": "author-review.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": {
+        "path": "author-decision.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "protected-content-question": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-protected-content-question",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": null,
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": {
+        "path": "candidate.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "fail",
+      "coverage": "complete",
+      "confirmed_defect_ids": [
+        "D-1"
+      ],
+      "unresolved_ids": [],
+      "report": {
+        "path": "checks.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "execution": {
+      "status": "completed",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "needs_decision",
+      "candidate_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "review": {
+        "path": "author-review.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "decision": null,
+      "question_ids": [
+        "Q-1"
+      ]
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  "legacy-reassessment-not-run": {
+    "contract_version": "artifact-acceptance-1",
+    "record_id": "synthetic-legacy-reassessment-not-run",
+    "created_at": "2026-09-12T12:00:00Z",
+    "previous_record": null,
+    "reassessment_of": {
+      "path": "old-run/manifest.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "bindings": {
+      "run_manifest": {
+        "path": "manifest.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "source_manifest": {
+        "path": "sources.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "instruction_template": {
+        "path": "instructions.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "acceptance_criteria": {
+        "path": "criteria.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "candidate_manifest": null,
+      "delivery_manifest": null
+    },
+    "acceptance": {
+      "status": "not_run",
+      "coverage": "not_run",
+      "confirmed_defect_ids": [],
+      "unresolved_ids": [],
+      "report": null
+    },
+    "execution": {
+      "status": "ready",
+      "stop_reasons": []
+    },
+    "model_diagnostics": {
+      "status": "not_run",
+      "report": null
+    },
+    "author_approval": {
+      "status": "not_requested",
+      "candidate_manifest_sha256": null,
+      "review": null,
+      "decision": null,
+      "question_ids": []
+    },
+    "resources": {
+      "budget_scope_id": "synthetic-existing-budget",
+      "ledger": {
+        "path": "ledger.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  }
+}

@@ -1,5 +1,25 @@
 # Quickstart
 
+For new generation with evaluation delivery, use [Pack delivery and quality reporting](pipeline-delivery.en.md). Scores do not decide adoption or trigger repairs. The older acceptance/approval workflows on this page remain separate.
+
+`artifact-acceptance-1` runs direct content, instruction and local delivery checks, fixed resource limits, at most one repair, separate candidate reassessment and a hash-bound author packet. Standard question generation, reader answers and grading make zero calls. Omission preserves `legacy-reader-evaluation-1`. See [Direct artifact production](pipeline-artifact-workflow.en.md) and [Model comparison](pipeline-model-comparison.en.md). Comparison is optional and is not an individual Pack acceptance gate.
+
+Automatic production using questions and holdout below describes the legacy contract. Individual production and review commands remain available.
+
+Fresh runs freeze a reader-utility contract before questions or answers. Generated questions no longer create mandatory Pack content. Central meanings, material qualifications and correct attribution remain essential; incidental numbers may be handled by an honest limitation and a specific relevant location already present in the Pack. Generic deflection and false statements still fail. Existing studies retain their original scope and results on restart; changing scope requires a separately identified reassessment, without implying that the candidate must be regenerated.
+
+The automatic workflow is an unqualified alpha. Legacy-contract production mode requires a measured workflow certificate and an end-to-end time/cost envelope; legacy research commands require explicit `--experimental`. Control tests do not establish real-book completion. See [predictable production and qualification](predictable-production.en.md) for planning, measurement and current limits.
+
+Given a manuscript, `reading-pack pipeline start` extracts structure, generates content, evaluates quality and repairs defects within fixed limits. A passing candidate is delivered with an author-review form. Author-provided appendices and other supplements are optional. Printed bibliographic references do not need a URL. Chapter reviews can include bounded neighboring source text when a chapter crosses a processing window. See the [automatic production guide](automatic-pipeline.en.md) for setup and execution.
+
+The pipeline freezes a finite coverage contract before generation. Independent adjudication checks suspected defects against the whole Pack and bounded source context, including registered supplements. Optional improvements are saved separately and do not trigger repairs or block reader tests. Confirmed material errors and unresolved source questions still block acceptance.
+
+New question sets are reviewed for relevance to a compact reading aid before their requirements are frozen. Existing frozen sets survive restart unchanged. Unresolved audit questions receive one bounded source lookup and rejudgment per round; supported clarifications of editable records can then be reviewed and re-audited alongside confirmed repairs. Uncertainty continues to block acceptance, and the existing round and budget limits still apply. Duplicate observations are grouped without losing their reasons or evidence.
+
+The steps below describe individual commands for inspection or manual operation. Automatic production does not require a person to dispatch each stage. Supplied records remain protected unless the user explicitly permits selected unapproved revisions; see the automatic production guide.
+
+For recovery across an engine update, `pipeline restart` can retain a completed-round or stopped working-draft checkpoint. The automatic production guide explains the explicit options, validation and remaining-budget requirements; a checkpoint does not imply a quality pass.
+
 This walkthrough starts from a fresh directory, uses no network service, and ends with a technically valid draft pack. Publication still requires the human release gates.
 
 ## 1. Install the local checkout
@@ -29,7 +49,7 @@ Use `reading-pack profiles` to inspect all contracts. Initialization refuses a n
 
 ## 3. Import structure
 
-Copy your UTF-8 Markdown, Org, EPUB3, PDF, or text manuscript into `demo/manuscripts/`, then run. PDF import additionally requires local Poppler `pdfinfo` and `pdftotext` commands:
+Copy your UTF-8 Markdown, Org, EPUB3, PDF, or text manuscript into `demo/manuscripts/`, then run. PDF import additionally requires local Poppler `pdfinfo` and `pdftotext` (plus `pdftohtml` for vertical-layout recovery) commands:
 
 ```sh
 reading-pack import-plan demo/manuscripts/book.md \
@@ -54,7 +74,7 @@ Open `demo/data/pack.en.json`. Add concise author-written chapter summaries and 
 - `names` and `glossary`: navigation entries, not invented definitions;
 - `references`: official HTTP(S) resources.
 
-Every record starts at `draft`. An AI may propose candidates using `prompts/`, but it may not accept or approve them. The guarded path is explicit:
+Every record starts at `draft`. An AI may propose candidates using `prompts/`; audited AI review can accept candidates for draft application, while final author approval remains human. The guarded path is explicit:
 
 ```sh
 reading-pack candidates create /tmp/responses.json \

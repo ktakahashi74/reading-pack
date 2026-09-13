@@ -204,7 +204,7 @@ def _validate_record_semantics(
             _issue(issues, "RP107", path, "descriptive claims must not use revision_conditions")
         if record.get("layer") == "normative" and record.get("falsifiability"):
             _issue(issues, "RP108", path, "normative claims must not use falsifiability")
-    if collection == "references":
+    if collection == "references" and "url" in record:
         url = record.get("url", "")
         parsed = urlparse(url) if isinstance(url, str) else urlparse("")
         if parsed.scheme not in {"https", "http"} or not parsed.netloc:

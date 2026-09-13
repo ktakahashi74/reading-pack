@@ -1,5 +1,25 @@
 # Production workflow
 
+For new generation with evaluation delivery, use [Pack delivery and quality reporting](pipeline-delivery.en.md). Scores do not decide adoption or trigger repairs. The older acceptance/approval workflows on this page remain separate.
+
+`artifact-acceptance-1` runs direct content, instruction and local delivery checks, fixed resource limits, at most one repair, separate candidate reassessment and a hash-bound author packet. Standard question generation, reader answers and grading make zero calls. Omission preserves `legacy-reader-evaluation-1`. See [Direct artifact production](pipeline-artifact-workflow.en.md) and [Model comparison](pipeline-model-comparison.en.md). Comparison is optional and is not an individual Pack acceptance gate.
+
+Automatic production using questions and holdout below describes the legacy contract. Individual production and review commands remain available.
+
+Fresh runs freeze a reader-utility contract before questions or answers. Generated questions no longer create mandatory Pack content. Central meanings, material qualifications and correct attribution remain essential; incidental numbers may be handled by an honest limitation and a specific relevant location already present in the Pack. Generic deflection and false statements still fail. Existing studies retain their original scope and results on restart; changing scope requires a separately identified reassessment, without implying that the candidate must be regenerated.
+
+The automatic workflow is an unqualified alpha. Legacy-contract production mode requires a measured workflow certificate and an end-to-end time/cost envelope; legacy research commands require explicit `--experimental`. Control tests do not establish real-book completion. See [predictable production and qualification](predictable-production.en.md) for planning, measurement and current limits.
+
+Given a manuscript, `reading-pack pipeline start` extracts structure, generates content, evaluates quality and repairs defects within fixed limits. A passing candidate is delivered with an author-review form. Author-provided appendices and other supplements are optional. Printed bibliographic references do not need a URL. Chapter reviews can include bounded neighboring source text when a chapter crosses a processing window. See the [automatic production guide](automatic-pipeline.en.md) for setup and execution.
+
+The pipeline freezes a finite coverage contract before generation. Independent adjudication checks suspected defects against the whole Pack and bounded source context, including registered supplements. Optional improvements are saved separately and do not trigger repairs or block reader tests. Confirmed material errors and unresolved source questions still block acceptance.
+
+New question sets are reviewed for relevance to a compact reading aid before their requirements are frozen. Existing frozen sets survive restart unchanged. Unresolved audit questions receive one bounded source lookup and rejudgment per round; supported clarifications of editable records can then be reviewed and re-audited alongside confirmed repairs. Uncertainty continues to block acceptance, and the existing round and budget limits still apply. Duplicate observations are grouped without losing their reasons or evidence.
+
+The steps below describe individual commands for inspection or manual operation. Automatic production does not require a person to dispatch each stage. Supplied records remain protected unless the user explicitly permits selected unapproved revisions; see the automatic production guide.
+
+During chapter candidate review, controller-verified unchanged structure is retained as context; new summaries, terms and spoiler scope still require independent source review. A stopped draft may be explicitly retained by `pipeline restart` and evaluated again. See the automatic production guide for checkpoint and frozen-test boundaries.
+
 This public guide applies the [Reading Pack Production Standard](../spec/reading-pack-production-standard.en.md) with the `reading-pack` reference implementation. The completed Markdown format is defined separately by the [Reading Pack Format Specification](../spec/reading-pack-format-spec.en.md). Command names, file names, sessions, and transactions in this guide are toolkit-specific; another implementation need not copy them to claim production conformance.
 
 Each stage has a stable ID, actor, output, and gate. D means deterministic, L means optional model assistance followed by inspection, H means a human decision that the software must not make, and R means candidate triage by a named human or auditable AI.

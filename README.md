@@ -6,7 +6,29 @@ Reading Pack is an open-source toolkit for creating compact guides that help rea
 
 A Reading Pack points the reader back to the original book. It is not a reproduction or compressed substitute. The toolkit builds it reproducibly from structured data reviewed by an author or editor, then detects manual changes, stale translations, and missing publication approvals.
 
-> **Status:** The toolkit is v0.6.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
+> **Status:** The toolkit is v0.7.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
+
+## Automatic production
+
+The recommended entry for new production is `pipeline deliver`: fixed generation/evaluation calls, a Pack and a quantitative report, with adoption left to the user. Low scores or incomplete evaluation retain the generated Pack. [Delivery workflow](docs/pipeline-delivery.en.md).
+
+The following describes existing contracts.
+
+`artifact-acceptance-1` runs direct content, instruction and local delivery checks, fixed resource limits, at most one repair, separate candidate reassessment and a hash-bound author packet. Standard question generation, reader answers and grading make zero calls. Omission preserves `legacy-reader-evaluation-1`. See [Direct artifact production](docs/pipeline-artifact-workflow.en.md) and [Model comparison](docs/pipeline-model-comparison.en.md). Comparison is optional and is not an individual Pack acceptance gate.
+
+### Automatic production under the legacy contract
+
+Fresh runs freeze a reader-utility contract before questions or answers. Generated questions no longer create mandatory Pack content. Central meanings, material qualifications and correct attribution remain essential; incidental numbers may be handled by an honest limitation and a specific relevant location already present in the Pack. Generic deflection and false statements still fail. Existing studies retain their original scope and results on restart; changing scope requires a separately identified reassessment, without implying that the candidate must be regenerated.
+
+The automatic workflow is an unqualified alpha. Legacy-contract production mode requires a measured workflow certificate and an end-to-end time/cost envelope; legacy research commands require explicit `--experimental`. Control tests do not establish real-book completion. See [predictable production and qualification](docs/predictable-production.en.md) for planning, measurement and current limits.
+
+Given a manuscript, `reading-pack pipeline start` extracts structure, generates content, evaluates quality and repairs defects within fixed limits. A passing candidate is delivered with an author-review form. Author-provided appendices and other supplements are optional. Printed bibliographic references do not need a URL. Chapter reviews can include bounded neighboring source text when a chapter crosses a processing window. See the [automatic production guide](docs/automatic-pipeline.en.md) for setup and execution.
+
+The pipeline freezes a finite coverage contract before generation. Independent adjudication checks suspected defects against the whole Pack and bounded source context, including registered supplements. Optional improvements are saved separately and do not trigger repairs or block reader tests. Confirmed material errors and unresolved source questions still block acceptance.
+
+New question sets are reviewed for relevance to a compact reading aid before their requirements are frozen. Existing frozen sets survive restart unchanged. Unresolved audit questions receive one bounded source lookup and rejudgment per round; supported clarifications of editable records can then be reviewed and re-audited alongside confirmed repairs. Uncertainty continues to block acceptance, and the existing round and budget limits still apply. Duplicate observations are grouped without losing their reasons or evidence.
+
+After source checks and reader tests pass, the author reviews the content and publication conditions. Reaching a limit or failing the final test stops the run and records the reason and unresolved defects. A stopped draft can be retained across an engine update and evaluated again with its frozen questions. The detailed guide explains author-input protection, explicit permission for selected unapproved revisions, frozen tests and recovery.
 
 ## Public standards
 
@@ -14,7 +36,7 @@ Reading Pack separates three concerns. The first is the Markdown artifact delive
 
 - [Reading Pack Format Specification 1.0-draft](spec/reading-pack-format-spec.en.md) defines the structure and meaning of the single Markdown artifact.
 - [Reading Pack Production Standard 1.0-draft (beta)](spec/reading-pack-production-standard.en.md) defines Levels 1–3, W0–W13, evidence, author review, evaluation, and publication gates.
-- [reading-pack Reference Implementation Profile 0.6.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
+- [reading-pack Reference Implementation Profile 0.7.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
 
 Koichi Takahashi authored the Format Specification and Production Standard in 2026 and publishes them under CC BY 4.0. They may be modified, independently implemented, and used in commercial Reading Pack production services. The [standards-suite overview](spec/reading-pack-spec.en.md) explains the relationship among the three documents and gives suggested citations.
 
@@ -100,7 +122,7 @@ python -m pip install .
 reading-pack --version
 ```
 
-Installation may contact a package index if a dependency is not already available. Once installed, core operations run locally without network access. PDF import also uses the local Poppler commands `pdfinfo` and `pdftotext`.
+Installation may contact a package index if a dependency is not already available. Once installed, core operations run locally without network access. PDF import also uses the local Poppler commands `pdfinfo` and `pdftotext` (plus `pdftohtml` for vertical-layout recovery).
 
 ## Rebuild the included example
 
@@ -188,7 +210,7 @@ An authority may declare an HTTPS reference as an `official_companion` with `pro
 | Primary output | One generated Reading Pack Markdown file per language |
 | Optional output | Agent Skill directory and a byte-reproducible ZIP |
 
-PDF-derived structure always requires human review. Scans and complex layouts may need a separately checked outline. The `pdf-vertical` mode reconstructs Poppler's glyph order; it is not OCR.
+PDF structure is included in the final author review. The automatic pipeline can recover vertical-PDF chapter openers and body heading candidates from character positions and sizes, then select and independently verify them. `pdf-vertical` does not implement OCR; scans without a text layer and unsupported layouts stop explicitly.
 
 ## Publication remains a human decision
 

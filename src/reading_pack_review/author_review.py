@@ -253,11 +253,22 @@ def validate_author_review_state(value: Any) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise ReadingPackError("invalid author review state: root must be an object")
     _require_keys(
-        value, {"schema_version", "reviews"}, {"schema_version", "reviews"},
+        value, {"schema_version", "reviews"}, {"schema_version", "reviews", "draft_revisions", "draft_permissions"},
         "author review state",
     )
     if value["schema_version"] != STATE_SCHEMA_VERSION:
         raise ReadingPackError("invalid author review state: unsupported schema version")
+    for revision in value.get('draft_revisions', []):
+        if COLLECTION_MODULES[revision['collection']] != revision['module']:
+            raise ReadingPackError('invalid author review state: draft collection/module mismatch')
+    permission_keys = set()
+    for permission in value.get('draft_permissions', []):
+        if COLLECTION_MODULES[permission['collection']] != permission['module']:
+            raise ReadingPackError('invalid draft permission collection/module mismatch')
+        key = tuple(permission[k] for k in ('language', 'collection', 'record_id', 'module_state_sha256', 'reviewed_sha256'))
+        if key in permission_keys:
+            raise ReadingPackError('duplicate draft permission')
+        permission_keys.add(key)
     reviews = value["reviews"]
     if not isinstance(reviews, list) or len(reviews) > MAX_HISTORY:
         raise ReadingPackError("invalid author review state: reviews must be a bounded array")
@@ -1425,7 +1436,7 @@ def _apply_author_review_plan_with_builder(
         if len(reviews) > MAX_HISTORY:
             reviews = reviews[-MAX_HISTORY:]
         prospective_state = validate_author_review_state(
-            {"schema_version": STATE_SCHEMA_VERSION, "reviews": reviews}
+            {**before_state, "schema_version": STATE_SCHEMA_VERSION, "reviews": reviews}
         )
         before_config = _read_text(
             project / "reading-pack.toml", 4 * 1024 * 1024, "project config"
@@ -1512,6 +1523,7 @@ def _effective_chain(
     module_state_sha256: str,
     record_id: str,
     initial_sha256: str | None,
+    draft_revisions: list[Mapping[str, Any]] | tuple = (),
 ) -> tuple[str | None, Mapping[str, Any] | None]:
     current = initial_sha256
     latest: Mapping[str, Any] | None = None
@@ -1522,8 +1534,16 @@ def _effective_chain(
                 and item["module"] == module
                 and item["module_state_sha256"] == module_state_sha256
                 and item["record_id"] == record_id
-                and item["before_sha256"] == current
             ):
+                if item['before_sha256'] != current and list_name == 'actions' and any(
+                        d['language'] == language and d['module'] == module and
+                        d['module_state_sha256'] == module_state_sha256 and d['record_id'] == record_id and
+                        d['reviewed_sha256'] == current and d['draft_sha256'] == item['before_sha256']
+                        for d in draft_revisions):
+                    # This bridge is a producer draft, never an author decision.
+                    current = item['before_sha256']
+                if item['before_sha256'] != current:
+                    continue
                 current = item["after_sha256"]
                 latest = item
     return current, latest
@@ -1575,9 +1595,17 @@ def author_review_consistency_findings(
                     module_state_sha256=binding,
                     record_id=record_id,
                     initial_sha256=candidates[0]["before_sha256"],
+                    draft_revisions=review_state.get("draft_revisions", []),
                 )
                 record = actual.get(record_id)
                 actual_hash = semantic_hash(record) if record is not None else None
+                pending = record is not None and record.get('status') == 'draft' and record.get('translation_status', 'draft') == 'draft' and any(
+                    d['language'] == language and d['collection'] == collection and d['module'] == module and
+                    d['module_state_sha256'] == binding and d['record_id'] == record_id and
+                    d['reviewed_sha256'] == expected and d['draft_sha256'] == actual_hash
+                    for d in review_state.get('draft_revisions', []))
+                if pending:
+                    continue
                 if expected != actual_hash:
                     findings.append((
                         "RP505",
@@ -1624,6 +1652,15 @@ def review_overrides_for_author_input(
             ):
                 continue
             record_id = item["record_id"]
+            if field is None and current.get(record_id) != item['before_sha256']:
+                for draft in review_state.get('draft_revisions', []):
+                    if (draft['language'] == language and draft['module'] == module and
+                        draft['module_state_sha256'] == module_state_sha256 and draft['record_id'] == record_id and
+                        draft['reviewed_sha256'] == current.get(record_id) and draft['draft_sha256'] == item['before_sha256'] and
+                        has_draft_permission(review_state, language, draft['collection'], module_state_sha256,
+                                             record_id, current.get(record_id))):
+                        current[record_id] = item['before_sha256']
+                        break
             if current.get(record_id) != item["before_sha256"]:
                 continue
             if item["after_sha256"] is None:
@@ -1631,3 +1668,21 @@ def review_overrides_for_author_input(
             else:
                 current[record_id] = item["after_sha256"]
     return current
+
+
+def has_draft_permission(state, language, collection, binding, record_id, reviewed_hash):
+    """A bounded permission to draft is separate from an author content decision."""
+    return any(p['language'] == language and p['collection'] == collection and
+               p['module_state_sha256'] == binding and p['record_id'] == record_id and
+               p['reviewed_sha256'] == reviewed_hash for p in state.get('draft_permissions', []))
+
+
+def permitted_draft(state, language, collection, binding, record, reviewed_hash):
+    if (record is None or record.get('status') != 'draft' or
+            record.get('translation_status', 'draft') != 'draft' or
+            not has_draft_permission(state, language, collection, binding, record['id'], reviewed_hash)):
+        return False
+    return any(d['language'] == language and d['collection'] == collection and
+               d['module_state_sha256'] == binding and d['record_id'] == record['id'] and
+               d['reviewed_sha256'] == reviewed_hash and d['draft_sha256'] == semantic_hash(record)
+               for d in state.get('draft_revisions', []))

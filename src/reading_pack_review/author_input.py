@@ -175,7 +175,7 @@ _REQUIRED_INPUT_FIELDS = {
     "policy": {"id", "kind", "statement"},
     "names": {"id", "name", "chapter_id"},
     "glossary": {"id", "term", "chapter_id"},
-    "references": {"id", "url", "label"},
+    "references": {"id", "label"},
 }
 
 _CSV_FIELDS = {
@@ -1616,12 +1616,17 @@ def author_input_consistency_findings(
                     by_id = {item.get("id"): item for item in records if isinstance(item, Mapping)}
                     for identifier in expected:
                         record = by_id.get(identifier)
+                        pending = False
+                        if review_state is not None:
+                            from .author_review import permitted_draft
+                            pending = permitted_draft(review_state, language, collection, _json_hash(current),
+                                                      record, expected_hashes.get(identifier))
                         if (
                             record is None
                             or record.get("provenance_source_id") != source["id"]
                             or record.get("provenance_source_hash") != source["sha256"]
-                            or semantic_hash(dict(record))
-                            != expected_hashes.get(identifier)
+                            or (not pending and semantic_hash(dict(record))
+                                != expected_hashes.get(identifier))
                         ):
                             findings.append((
                                 "RP502",
