@@ -487,7 +487,8 @@ def _index(records: list[dict], value_key: str, lang: str) -> str:
 def _references(records: list[dict]) -> str:
     lines = []
     for record in records:
-        line = f"{record['id']}: {record['url']} | {record['label']}"
+        line = (f"{record['id']}: {record['url']} | {record['label']}" if "url" in record
+                else f"{record['id']}: {record['label']}")
         if is_companion_reference(record):
             line += (
                 f" | relation={record['relation']} | scope={record['url_scope']}"

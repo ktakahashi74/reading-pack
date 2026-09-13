@@ -368,7 +368,8 @@ def _build_units(extracted: ExtractedBook, source_hash: str) -> tuple[list[dict[
     return units, diagnostics
 
 
-def create_import_plan(source: Path, explicit_format: str | None = None) -> dict[str, Any]:
+def create_import_plan(source: Path, explicit_format: str | None = None, *,
+                       layout_output: Path | None = None) -> dict[str, Any]:
     """Extract a source into a deterministic, body-free staging plan."""
 
     source = Path(source).resolve()
@@ -383,6 +384,19 @@ def create_import_plan(source: Path, explicit_format: str | None = None) -> dict
         "format": extracted.source_format,
     }
     units, diagnostics = _build_units(extracted, before["sha256"])
+    if extracted.layout is not None:
+        diagnostics.append(_diagnostic(
+            "RPIP110", "warning",
+            "PDF chapter openers recovered from layout; body section candidates require independent selection and review",
+        ))
+        for chapter in extracted.layout['chapters']:
+            if chapter['toc_title'] and chapter['toc_title'] != chapter['title']:
+                diagnostics.append(_diagnostic(
+                    "RPIP111", "warning",
+                    f"{chapter['id']}: TOC/body title disagreement; body opener retained",
+                ))
+        if layout_output is not None:
+            write_json(layout_output, {**extracted.layout, 'source_sha256': before['sha256']})
     metadata_candidates: list[dict[str, Any]] = []
     title = _safe_heading(extracted.title)
     if title and title.lower() != "untitled book":

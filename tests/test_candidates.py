@@ -29,6 +29,36 @@ from reading_pack.project import create_project, load_language_data, write_json
 
 
 class CandidateRunTests(unittest.TestCase):
+    def test_existing_author_id_can_be_revised_but_not_invented(self):
+        from reading_pack_producer.pipeline_records import candidate_record_schemas
+        from jsonschema import Draft202012Validator
+        data = load_language_data(self.project, 'en')
+        original = {'id': 'AX-1', 'layer': 'descriptive', 'kind': 'observation',
+                    'statement': 'A reader verifies evidence before accepting assertions.',
+                    'chapter_ids': ['CH-01'], 'status': 'reviewed'}
+        data['claims'] = [original]
+        write_json(self.project / 'data' / 'pack.en.json', data)
+        replacement = {**original, 'statement': 'Claims require prior source verification.', 'status': 'draft'}
+        validator = Draft202012Validator(candidate_record_schemas(data)['claims'])
+        self.assertTrue(validator.is_valid(replacement))
+        self.assertFalse(validator.is_valid({**replacement, 'id': 'AX-2'}))
+        response = {'collection': 'claims', 'record': replacement,
+                    'evidence': [{'snippet': 'A careful reader checks the source before accepting a claim.'}]}
+        run = self._run('legacy-author-id', response)
+        candidate = load_candidate_run(run)['candidates'][0]
+        self.assertEqual(candidate['candidate_state'], 'ready_for_review')
+        self.assertTrue(candidate['base_record_sha256'])
+        accept_candidates(run, [candidate['candidate_id']], reviewer='Test Reviewer')
+        apply_candidate_run(self.project, language='en', run=run, source_path=self.source,
+                            candidate_ids=[candidate['candidate_id']])
+        revised = load_language_data(self.project, 'en')['claims'][0]
+        self.assertEqual(revised['id'], 'AX-1')
+        self.assertEqual(revised['status'], 'draft')
+        response['record']['id'] = 'AX-2'
+        invalid = load_candidate_run(self._run('invented-author-id', response))['candidates'][0]
+        self.assertEqual(invalid['candidate_state'], 'quarantined')
+        self.assertIn('invalid_record_id', invalid['qa']['reason_codes'])
+
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)

@@ -160,3 +160,5 @@ reading-pack build --project ./my-pack
 `author-input report`が表示するのは、モード、件数、原資料の識別情報だけであり、機密本文は表示しない。内容の最終確認には[エージェント補助付きMarkdownレビュー](author-review.ja.md)を使う。AIPと現在のレコードが一致すれば根拠群として判断でき、エージェントは例外の説明と記入を補助できる。編集後Markdownが人間の判断記録となる。著者修正は元のAIP来歴を消さず、本文を含まないbefore/after hash履歴として重ねられる。自動生成候補の一次選別には、別に`reading-pack review bundle`を使う。
 
 Copyright 2026 Koichi Takahashi / 高橋恒一. CC BY 4.0.
+
+参考文献の`label`に書誌情報を記録し、原資料にウェブアドレスがない場合は`url`を省略できる。JSONでは項目自体を省き、CSVでは既存の`url`列を空欄にする。アドレスを補作しない。公式付録の宣言には引き続きURL、範囲、取得方針が必要である。書誌情報の収録だけで、参照先本文を取得したとは扱わない。

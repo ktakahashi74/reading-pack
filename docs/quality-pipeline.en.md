@@ -1,5 +1,13 @@
 # Quality pipeline
 
+For new generation with evaluation delivery, use [Pack delivery and quality reporting](pipeline-delivery.en.md). Scores do not decide adoption or trigger repairs. The older acceptance/approval workflows on this page remain separate.
+
+`artifact-acceptance-1` runs direct content, instruction and local delivery checks, fixed resource limits, at most one repair, separate candidate reassessment and a hash-bound author packet. Standard question generation, reader answers and grading make zero calls. Omission preserves `legacy-reader-evaluation-1`. See [Direct artifact production](pipeline-artifact-workflow.en.md) and [Model comparison](pipeline-model-comparison.en.md). Comparison is optional and is not an individual Pack acceptance gate.
+
+Automatic production using questions and holdout below describes the legacy contract. Individual production and review commands remain available.
+
+Automatic production is available through `reading-pack pipeline start`: manuscript input, optional author supplements, source-grounded generation, automatic evaluation and bounded repair, followed by one author-review form. See [Automatic production pipeline](automatic-pipeline.en.md). The individual commands below remain available for manual operation and inspection.
+
 This guide describes how the `reading-pack` reference implementation satisfies the [Reading Pack Production Standard](../spec/reading-pack-production-standard.en.md). Schema names, commands, and private-run structures are toolkit-specific; another implementation need not reproduce those internals.
 
 Reading Pack treats “works for any book” as a controlled production claim. It

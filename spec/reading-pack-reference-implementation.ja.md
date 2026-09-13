@@ -1,6 +1,6 @@
-PROFILE | name=reading-pack Reference Implementation Profile | version=0.6.0 | status=alpha | language=ja | primary=true | date=2026-08-22 | author=高橋恒一 | code_license=MIT | document_license=CC BY 4.0
+PROFILE | name=reading-pack Reference Implementation Profile | version=0.7.0 | status=alpha | language=ja | primary=true | date=2026-09-10 | author=高橋恒一 | code_license=MIT | document_license=CC BY 4.0
 
-# reading-pack参照実装プロファイル 0.6.0（alpha）
+# reading-pack参照実装プロファイル 0.7.0（alpha）
 
 この文書は、当リポジトリにあるPython実装の公開契約を説明する。Reading Packの形式適合または制作適合を他の実装が宣言するための条件ではない。日本語版を正本とする。
 
@@ -56,12 +56,18 @@ PROFILE | name=reading-pack Reference Implementation Profile | version=0.6.0 | s
 
 **RPI-019** 公開testは通信せず、架空資料だけを使い、Schema、診断互換、byte再現性、日英対応、transaction rollback、path境界、長文複製防止を検査する。実機model評価はCIの必須条件にしない。
 
-**RPI-020** このプロファイルへの準拠は`Built with reading-pack toolkit 0.6.0`という生成器表示で示してよい。これは形式適合または制作適合の宣言を代替しない。
+**RPI-020** このプロファイルへの準拠は`Built with reading-pack toolkit 0.7.0`という生成器表示で示してよい。これは形式適合または制作適合の宣言を代替しない。
 
 **RPI-021** Delivery Adapterは完成した正準Packから決定的に生成する任意の派生物であり、正本、形式適合条件、承認単位ではない。`delivery check`は正準Packの鮮度、aliasのbyte一致、manifest、marker、版と言語、上限、全componentのexact再構築を検査する。上限超過時は切り詰めず失敗し、command自体は公開を行わない。
+
+**RPI-022** 任意の`pipeline recipe|start|resume|status|finalize`制御器は、入力・実装・設定・合否契約を固定し、失敗と累計資源を保存する。無指定の`legacy-reader-evaluation-1`は読解試験・保留最終試験を使い、署名後に承認済み成果物をローカル生成する。明示した`artifact-acceptance-1`は内容・指示・配布物の直接検査、一括修正最大1回、全体再検査、著者確認票を使う。新契約の`finalize --review`は候補hashに対するJSON判断証拠のみを追記し、合否変更・draft方針の有効化・配布物の承認済み生成を行わない。いずれも外部配備は行わない。任意のモデル比較は合否・著者承認から独立し、事前登録した工程・回数・累計費用・時間枠を増やさない。 [制作ガイド](../docs/pipeline-artifact-workflow.ja.md).
 
 ## 7. 変更管理
 
 本プロファイルの版はtoolkitの版に合わせる。CLI、Schema、project形式、transaction、package境界を変えた場合は、code、日英文書、test、合成作例を同じreleaseで更新する。
 
 Copyright 2026 Koichi Takahashi / 高橋恒一. Document licensed under CC BY 4.0; implementation licensed under MIT as mapped in `LICENSES/README.md`.
+
+## 生成・評価納品の入口
+
+`pipeline deliver`は`generation-report-1`として生成物と定量評価を納品する。品質点による自動採否・修正を行わず、ユーザーが受け入れを判断する。正常納品と制作標準への適合・著者採用・公開は別である。旧runの契約と判定は保持する。詳細は[生成・評価納品](../docs/pipeline-delivery.ja.md)。

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from reading_pack import __version__
+
 import hashlib
 import json
 import tempfile
@@ -41,6 +43,9 @@ class RenderingTests(unittest.TestCase):
         for language, digest in expected.items():
             rendered = render_pack(
                 self.project, language, self.config, self.data[language]
+            ).replace(
+                f"reading-pack toolkit {__version__}",
+                "reading-pack toolkit 0.6.0",
             ).encode("utf-8")
             self.assertEqual(hashlib.sha256(rendered).hexdigest(), digest)
 
@@ -61,7 +66,7 @@ class RenderingTests(unittest.TestCase):
             "production target: Reading Pack Production 1.0-draft Level 3 beta",
             pack,
         )
-        self.assertIn("generator: reading-pack toolkit 0.6.0", pack)
+        self.assertIn(f"reading-pack toolkit {__version__}", pack)
         self.assertNotIn("specification: Reading Pack Specification", pack)
 
     def test_manuscript_prose_does_not_leak(self):

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reading-pack"
-version = "0.6.0"
+version = "0.7.0"
 description = "Offline-first toolkit for building bilingual Reading Packs for books"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,6 +29,7 @@ dependencies = [
 
 [project.scripts]
 reading-pack = "reading_pack.cli:main"
+reading-pack-claude-adapter = "reading_pack_producer.claude_adapter:main"
 
 [project.urls]
 Documentation = "https://github.com/ktakahashi74/reading-pack"

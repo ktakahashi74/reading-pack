@@ -276,7 +276,7 @@
     },
     "reference": {
       "type": "object",
-      "required": ["id", "url", "label", "status"],
+      "required": ["id", "label", "status"],
       "properties": {
         "id": {"type": "string"},
         "url": {"type": "string", "format": "uri"},
@@ -294,9 +294,9 @@
       },
       "allOf": [{"$ref": "#/$defs/supportProvenance"}],
       "dependentRequired": {
-        "relation": ["url_scope", "retrieval_policy"],
-        "url_scope": ["relation", "retrieval_policy"],
-        "retrieval_policy": ["relation", "url_scope"]
+        "relation": ["url_scope", "retrieval_policy", "url"],
+        "url_scope": ["relation", "retrieval_policy", "url"],
+        "retrieval_policy": ["relation", "url_scope", "url"]
       },
       "additionalProperties": false
     },

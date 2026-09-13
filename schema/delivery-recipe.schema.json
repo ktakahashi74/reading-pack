@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reading-pack.dev/schema/delivery-recipe.schema.json",
+  "title": "Bounded generation and quality reporting recipe",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "generation-report-1"
+    },
+    "workers": {
+      "type": "object",
+      "properties": {
+        "generator": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "not": {
+                  "pattern": "\u0000"
+                }
+              }
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "pattern": "\\S",
+              "not": {
+                "pattern": "[\u0000-\u001f-‪-‮⁦-⁩]"
+              }
+            }
+          },
+          "required": [
+            "command",
+            "model"
+          ],
+          "additionalProperties": false
+        },
+        "evaluator": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "not": {
+                  "pattern": "\u0000"
+                }
+              }
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "pattern": "\\S",
+              "not": {
+                "pattern": "[\u0000-\u001f-‪-‮⁦-⁩]"
+              }
+            }
+          },
+          "required": [
+            "command",
+            "model"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "generator",
+        "evaluator"
+      ],
+      "additionalProperties": false
+    },
+    "language": {
+      "enum": [
+        "ja",
+        "en"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "\\S",
+      "not": {
+        "pattern": "[\u0000-\u001f-‪-‮⁦-⁩]"
+      }
+    },
+    "max_cost_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
+    "call_allowance_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
+    "cumulative_cost_limit_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
+    "prior_cost_usd": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "max_wall_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 86400
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600
+    },
+    "local_reserve_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600
+    },
+    "max_chapter_characters": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200000
+    },
+    "max_pack_characters": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200000
+    },
+    "max_chapters": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 256
+    },
+    "max_sections_per_chapter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 128
+    },
+    "global_call_allowance_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000,
+      "description": "Allowance for the whole-Pack evaluation call; defaults to call_allowance_usd."
+    },
+    "evaluator_timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600,
+      "description": "Controller timeout for per-chapter evaluation calls; defaults to timeout_seconds."
+    },
+    "global_timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600,
+      "description": "Controller timeout for the whole-Pack evaluation call; defaults to timeout_seconds."
+    }
+  },
+  "required": [
+    "contract_version",
+    "workers",
+    "language",
+    "scope",
+    "max_cost_usd",
+    "call_allowance_usd",
+    "cumulative_cost_limit_usd",
+    "prior_cost_usd",
+    "max_wall_seconds",
+    "timeout_seconds",
+    "local_reserve_seconds",
+    "max_chapter_characters",
+    "max_pack_characters",
+    "max_chapters",
+    "max_sections_per_chapter"
+  ],
+  "additionalProperties": false
+}

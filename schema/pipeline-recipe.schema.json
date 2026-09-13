@@ -1,0 +1,356 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "contract_version": {
+      "enum": [
+        "legacy-reader-evaluation-1",
+        "artifact-acceptance-1"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "\\S",
+      "not": {"pattern": "[\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]"}
+    },
+    "workers": {
+      "type": "object",
+      "properties": {
+        "generator": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "minItems": 1,
+              "maxItems": 32
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "command",
+            "model"
+          ],
+          "additionalProperties": false
+        },
+        "judge": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "minItems": 1,
+              "maxItems": 32
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "command",
+            "model"
+          ],
+          "additionalProperties": false
+        },
+        "reader": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "minItems": 1,
+              "maxItems": 32
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "command",
+            "model"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "generator",
+        "judge",
+        "reader"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "enum": [
+        "general-navigation",
+        "academic-argument",
+        "nonfiction-reading",
+        "textbook-learning",
+        "fiction-spoiler-free",
+        "anthology-attribution",
+        "reference-routing",
+        "auto"
+      ]
+    },
+    "language": {
+      "enum": [
+        "auto",
+        "ja",
+        "en"
+      ]
+    },
+    "max_rounds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "max_stagnant_rounds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "max_calls": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600
+    },
+    "chunk_characters": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 50000
+    },
+    "max_pack_characters": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000
+    },
+    "max_pack_bytes": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 900000
+    },
+    "max_summary_characters": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 10000
+    },
+    "answer_repetitions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "minimum_requirement_fraction": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "max_critical_errors": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 0
+    },
+    "max_output_bytes": {
+      "type": "integer",
+      "minimum": 1024,
+      "maximum": 16777216
+    },
+    "pack_license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "public_base_url": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "generation_chunk_characters": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 50000
+    },
+    "max_generation_candidates": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 24
+    },
+    "review_batch_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12
+    },
+    "evaluation_batch_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "chapter_review_context_characters": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 150000
+    },
+    "repair_chunk_characters": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 50000
+    },
+    "audit_context_characters": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 64000
+    },
+    "benchmark_chunk_limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12
+    },
+    "operating_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "max_wall_seconds",
+        "local_reserve_seconds",
+        "max_cost_usd",
+        "call_allowance_usd",
+        "phase_call_limits"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "qualification",
+            "production"
+          ]
+        },
+        "max_wall_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "local_reserve_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "max_cost_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "call_allowance_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "phase_call_limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "preparation",
+            "generation",
+            "development",
+            "repair",
+            "final"
+          ],
+          "properties": {
+            "preparation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "generation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "development": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "repair": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "final": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            }
+          }
+        }
+      }
+    },
+    "artifact_inspection_batch_limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "artifact_adjudication_limit": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "instruction_context_characters": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000
+    }
+  },
+  "required": [
+    "schema_version",
+    "workers",
+    "profile",
+    "language",
+    "max_rounds",
+    "max_stagnant_rounds",
+    "max_calls",
+    "max_attempts",
+    "timeout_seconds",
+    "chunk_characters",
+    "max_pack_characters",
+    "max_pack_bytes",
+    "max_summary_characters",
+    "answer_repetitions",
+    "minimum_requirement_fraction",
+    "max_critical_errors",
+    "max_output_bytes",
+    "pack_license",
+    "public_base_url"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frozen bounded Reading Pack production recipe",
+  "$id": "https://example.org/reading-pack/pipeline-recipe.schema.json"
+}

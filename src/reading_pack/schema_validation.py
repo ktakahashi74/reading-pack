@@ -27,7 +27,11 @@ from .errors import ReadingPackError
 
 SCHEMA_NAMES = frozenset(
     {
+        "artifact-acceptance-report.schema.json",
         "ai-review.schema.json",
+        "pipeline-recipe.schema.json",
+        "pipeline-worker.schema.json",
+        "delivery-recipe.schema.json",
         "author-input-manifest.schema.json",
         "author-input-module.schema.json",
         "author-input-plan.schema.json",

@@ -1,5 +1,7 @@
 # Author review
 
+This page describes Markdown review and release signoff through `review export / plan / apply`. Artifact-contract `pipeline finalize --review` instead accepts a JSON decision and only appends its evidence. It does not automatically build approved delivery artifacts or publish them. [Production guide](pipeline-artifact-workflow.en.md).
+
 The default author-review format is one human-readable Markdown file. A person edits and submits that file. The edited file itself is the evidence of decisions, consent, holds, and correction instructions.
 
 An agent may assist by inspecting the complete session, aggregating exceptions, explaining recommendations, and filling response fields at the human's request. The conversation and agent output are not the authorization evidence. The human remains the decision-maker and inspects the final edited Markdown before submission.
