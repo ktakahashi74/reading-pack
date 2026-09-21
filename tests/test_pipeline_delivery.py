@@ -70,7 +70,7 @@ class DeliveryTests(unittest.TestCase):
 
     def test_evaluation_failure_retains_pack_and_reports_missing_not_zero(self):
         self.prepare('evaluation_error')
-        self.assertEqual(run(self.run)['state'], 'delivered')
+        self.assertEqual(run(self.run)['state'], 'delivered_partial')
         report = read_json(self.run / 'quality-report.json')
         self.assertEqual(report['evaluation']['records_evaluated'], 0)
         self.assertEqual(report['evaluation']['records_expected'], 3)
@@ -90,7 +90,7 @@ class DeliveryTests(unittest.TestCase):
 
     def test_empty_model_content_is_measured_without_quality_gate(self):
         self.prepare('empty_content')
-        self.assertEqual(run(self.run)['state'], 'delivered')
+        self.assertEqual(run(self.run)['state'], 'delivered_partial')
         report = read_json(self.run / 'quality-report.json')
         self.assertEqual(report['mechanical']['nonempty_content'], {'present': 0, 'expected': 3})
 
@@ -217,7 +217,7 @@ class SeededDeliveryTests(unittest.TestCase):
 
     def test_seeded_delivery_carries_author_modules_and_measures_completeness(self):
         from reading_pack.project import load_config
-        result = prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed)
+        result = prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True)
         self.assertEqual((result['chapter_count'], result['section_count'], result['maximum_calls']), (2, 3, 5))
         self.assertEqual(result['seed']['policy'], 'preserve')
         self.assertFalse(self.log.exists())
@@ -267,11 +267,11 @@ class SeededDeliveryTests(unittest.TestCase):
         data['chapters'][1]['title'] = 'Renamed chapter'
         self.write_seed_data(data)
         with self.assertRaisesRegex(ReadingPackError, 'chapter map'):
-            prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed)
+            prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True)
         self.assertFalse(self.run.exists())
         with self.assertRaisesRegex(ReadingPackError, 'unknown seed chapters'):
-            prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, chapter_map={'CH-09': 'x'})
-        result = prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed,
+            prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True, chapter_map={'CH-09': 'x'})
+        result = prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True,
                          chapter_map={'CH-02': 'The Garden Chooses'})
         self.assertEqual(result['chapter_count'], 2)
         self.assertEqual(_unseal(self.run / 'delivery-plan.json')['units'][1]['manuscript_title'], 'The Garden Chooses')
@@ -279,18 +279,18 @@ class SeededDeliveryTests(unittest.TestCase):
         data['chapters'][0]['sections'] = ['The Blueprint']
         self.write_seed_data(data)
         with self.assertRaisesRegex(ReadingPackError, 'section titles'):
-            prepare(self.root / 'sections', self.source, self.recipe(), chapter_level=2, seed=self.seed)
+            prepare(self.root / 'sections', self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True)
         data['chapters'][0]['sections'] = ['The Blueprint', 'First Germination']
         data['chapters'].append({**data['chapters'][1], 'id': 'CH-03', 'title': 'Extra'})
         self.write_seed_data(data)
         with self.assertRaisesRegex(ReadingPackError, 'declares 3 chapters'):
-            prepare(self.root / 'count', self.source, self.recipe(), chapter_level=2, seed=self.seed)
+            prepare(self.root / 'count', self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True)
         with self.assertRaisesRegex(ReadingPackError, 'only with --seed'):
             prepare(self.root / 'noseed', self.source, self.recipe(), chapter_level=2, seed_policy='regenerate')
         self.assertFalse(self.log.exists())
 
     def test_regenerate_policy_replaces_seed_summaries_as_drafts(self):
-        prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, seed_policy='regenerate')
+        prepare(self.run, self.source, self.recipe(), chapter_level=2, seed=self.seed, inherit_seed=True, seed_policy='regenerate')
         self.assertEqual(run(self.run)['state'], 'delivered')
         data = read_json(self.run / 'project' / 'data' / 'pack.en.json')
         self.assertEqual([ch['summary'] for ch in data['chapters']], ['Synthetic chapter summary.'] * 2)
@@ -303,7 +303,7 @@ class SeededDeliveryTests(unittest.TestCase):
         self.assertEqual(c['modules']['misreadings']['lost_ids'], [])
 
     def test_partial_generation_keeps_seed_summary_for_failed_chapter(self):
-        prepare(self.run, self.source, self.recipe('partial_generation'), chapter_level=2, seed=self.seed)
+        prepare(self.run, self.source, self.recipe('partial_generation'), chapter_level=2, seed=self.seed, inherit_seed=True)
         self.assertEqual(run(self.run)['state'], 'delivered_partial')
         c = read_json(self.run / 'quality-report.json')['completeness']
         self.assertEqual(c['chapters']['CH-02'], {'summary': 'seed', 'terms': 'seed', 'status': 'approved'})
@@ -318,7 +318,8 @@ class SeededDeliveryTests(unittest.TestCase):
         self.assertEqual(run(self.run)['state'], 'delivered')
         c = read_json(self.run / 'quality-report.json')['completeness']
         self.assertIsNone(c['seed'])
-        self.assertIn('empty by construction', c['note'])
+        self.assertEqual(c['mode'], 'fresh')
+        self.assertTrue(c['module_decisions']['CH-01']['misreadings']['omission_reason'])
         self.assertEqual(c['modules']['misreadings'], {'seed': 0, 'output': 0, 'lost_ids': [], 'added_ids': []})
         self.assertIn('No seed', (self.run / 'quality-report.en.md').read_text(encoding='utf-8'))
 
@@ -326,7 +327,7 @@ class SeededDeliveryTests(unittest.TestCase):
         path = self.root / 'recipe.json'
         path.write_text(json.dumps(self.recipe()))
         result = cli('pipeline', 'deliver', str(self.source), '--run', str(self.run), '--recipe', str(path),
-                     '--chapter-level', '2', '--seed', str(self.seed), '--prepare-only')
+                     '--chapter-level', '2', '--seed', str(self.seed), '--inherit-seed', '--prepare-only')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)['seed']['policy'], 'preserve')
         self.assertFalse(self.log.exists())
@@ -355,7 +356,8 @@ class SuccessorDeliveryTests(unittest.TestCase):
         command = [sys.executable, str(FIXTURE), mode, str(self.root / log)]
         return recipe(command, command, generator_model='generator', evaluator_model='evaluator',
                       max_cost_usd=5, call_allowance_usd=1, max_wall_seconds=600,
-                      timeout_seconds=10, language='en', scope='Two chapters', **extra)
+                      timeout_seconds=10, language='en', scope='Two chapters',
+                      cumulative_cost_limit_usd=extra.pop('cumulative_cost_limit_usd', 10), **extra)
 
     def test_failed_generation_is_regenerated_and_whole_pack_reevaluated(self):
         from reading_pack_producer.delivery import prepare_successor
@@ -383,7 +385,7 @@ class SuccessorDeliveryTests(unittest.TestCase):
     def test_failed_evaluations_are_redone_on_an_identical_pack(self):
         from reading_pack_producer.delivery import prepare_successor
         prepare(self.first, self.source, self.recipe('evaluation_error', 'a.log'))
-        self.assertEqual(run(self.first)['state'], 'delivered')
+        self.assertEqual(run(self.first)['state'], 'delivered_partial')
         first_pack = (self.first / 'reading-pack.en.md').read_bytes()
         result = prepare_successor(self.second, self.first, self.recipe('normal', 'b.log'))
         self.assertEqual(result['maximum_calls'], 3)
@@ -418,7 +420,7 @@ class SuccessorDeliveryTests(unittest.TestCase):
         from reading_pack_producer.delivery import prepare_successor
         seed = self.root / 'seed-project';copy_project(EXAMPLE, seed)
         source = seed / 'manuscripts' / 'book.en.md'
-        prepare(self.first, source, self.recipe('partial_generation', 'a.log'), chapter_level=2, seed=seed)
+        prepare(self.first, source, self.recipe('partial_generation', 'a.log'), chapter_level=2, seed=seed, inherit_seed=True)
         self.assertEqual(run(self.first)['state'], 'delivered_partial')
         result = prepare_successor(self.second, self.first, self.recipe('normal', 'b.log'))
         self.assertEqual(result['seed']['policy'], 'preserve')

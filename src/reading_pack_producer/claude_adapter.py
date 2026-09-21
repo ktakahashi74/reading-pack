@@ -75,7 +75,62 @@ def prune_additional_properties(value, schema, path=''):
     return value, pruned
 
 
-def assess(events: list[dict], code: int, schema: dict, model: str) -> tuple[dict, dict]:
+def prune_referenced_additional_properties(value, schema):
+    """Use resolved validation errors to reach closed objects behind local schema refs."""
+    candidate = copy.deepcopy(value); pruned = []
+    for error in Draft202012Validator(schema).iter_errors(value):
+        if error.validator != 'additionalProperties' or error.validator_value is not False:
+            continue
+        properties = error.schema.get('properties', {})
+        patterns = error.schema.get('patternProperties', {})
+        extras = [key for key in error.instance if key not in properties
+                  and not any(re.search(pattern, key) for pattern in patterns)]
+        path = list(error.absolute_path)
+        parent = candidate
+        try:
+            for key in path: parent = parent[key]
+        except (KeyError, IndexError, TypeError):
+            continue  # An enclosing undeclared property was already removed.
+        for key in extras:
+            if key in parent:
+                del parent[key]
+                pruned.append('/' + '/'.join(str(k).replace('~', '~0').replace('/', '~1')
+                                            for k in path + [key]))
+    return candidate, pruned
+
+
+def normalize_array_wrappers(value, schema):
+    """Recover an items wrapper or contiguous zero-based index object as an array.
+
+    Every element and order is preserved; all other errors or extra wrapper keys
+    prevent recovery. Final full-schema validation is mandatory.
+    """
+    def array_value(instance):
+        if isinstance(instance, dict) and set(instance)=={'items'} and isinstance(instance['items'], list):
+            return instance['items']
+        if isinstance(instance, dict) and instance and set(instance)=={str(i) for i in range(len(instance))}:
+            return [instance[str(i)] for i in range(len(instance))]
+        return None
+    validator = Draft202012Validator(schema)
+    errors = list(validator.iter_errors(value))
+    if not errors or len(errors) > 16 or any(
+            e.validator != 'type' or e.validator_value != 'array'
+            or array_value(e.instance) is None for e in errors):
+        return value, []
+    candidate = copy.deepcopy(value); paths = []
+    for error in errors:
+        path = list(error.absolute_path)
+        if not path:
+            candidate = array_value(candidate)
+        else:
+            parent = candidate
+            for key in path[:-1]: parent = parent[key]
+            parent[path[-1]] = array_value(parent[path[-1]])
+        paths.append('/' + '/'.join(str(k).replace('~', '~0').replace('/', '~1') for k in path))
+    return (candidate, paths) if validator.is_valid(candidate) else (value, [])
+
+
+def assess(events: list[dict], code: int, schema: dict, model: str, *, interrupted: bool = False) -> tuple[dict, dict]:
     """Accept only bounded schema-error retries, never another valid judgment.
 
     A final attempt rejected solely for undeclared object keys is salvaged by pruning
@@ -132,19 +187,55 @@ def assess(events: list[dict], code: int, schema: dict, model: str) -> tuple[dic
         issues.append('unknown_cost')
         cost = None
     salvaged = None
+    normalized_wrappers = []
     if issues and set(issues) <= SALVAGEABLE and calls:
         last = calls[-1][1].get('input')
         rejected = [b for _, b in outputs if b.get('tool_use_id') == calls[-1][1].get('id') and b.get('is_error') is True]
-        if rejected and isinstance(last, dict):
+        accepted_extras = (set(issues) == {'structured_output_schema_mismatch'} and code == 0
+                           and result.get('subtype') == 'success' and last == parsed
+                           and any(b.get('tool_use_id') == calls[-1][1].get('id') and not b.get('is_error')
+                                   for _, b in outputs))
+        if (rejected or accepted_extras) and isinstance(last, dict):
             candidate, pruned = prune_additional_properties(last, schema)
+            candidate, referenced = prune_referenced_additional_properties(candidate, schema)
+            pruned += referenced
             if pruned and validator.is_valid(candidate):
                 salvaged, issues = pruned, []
                 result['structured_output'] = candidate
+            elif accepted_extras:
+                candidate, normalized_wrappers = normalize_array_wrappers(last, schema)
+                if normalized_wrappers:
+                    issues = []
+                    result['structured_output'] = candidate
     audit = {'valid': not issues, 'issues': issues, 'observed_models': models,
              'model_usage': usage, 'total_cost_usd': cost,
              'native_schema_retries': max(0, len(calls) - 1)}
     if salvaged is not None:
         audit['salvaged_additional_properties'] = salvaged
+    if normalized_wrappers:
+        audit.update(normalized_array_wrappers=normalized_wrappers, native_schema_valid=False)
+    # Recovery is a distinct result state, not a successful native execution.
+    budget_stop = (len(results) == 1 and result.get('subtype') == 'error_max_budget_usd'
+                   and result.get('stop_reason') == 'tool_use' and cost is not None
+                   and set(usage) == {model}
+                   and all(u.get('canonicalModel') == model for u in usage.values()))
+    stopped = budget_stop or (interrupted and not results)
+    if (stopped and models == [model] and len(calls) == 1
+            and calls[0][1].get('name') == 'StructuredOutput'
+            and validator.is_valid(calls[0][1].get('input'))
+            and not result.get('permission_denials')
+            and not result.get('subagent_stats', {}).get('spawned', 0)
+            and isinstance(calls[0][1].get('id'), str) and calls[0][1]['id']
+            and len(outputs) <= 1
+            and all(i > calls[0][0] and b.get('tool_use_id') == calls[0][1]['id']
+                    and not b.get('is_error') for i, b in outputs)):
+        candidate = calls[0][1]['input']
+        if result.get('structured_output') in (None, candidate):
+            result['structured_output'] = candidate
+            audit.update(valid=True, issues=[], native_execution_completed=False,
+                recovery={'method': 'unchanged_schema_valid_structured_output',
+                          'reason': 'budget_stop' if budget_stop else 'interrupted',
+                          'original_issues': issues, 'content_changed': False})
     return result, audit
 
 
@@ -169,6 +260,12 @@ def cli_schema(schema: dict) -> dict:
 
 def cli_arguments(binary: Path, request: dict, *, effort: str, call_budget: float) -> list[str]:
     schema = cli_schema(request['response_schema'])
+    # The full frozen schema is already included in cli_input. Duplicating large
+    # dynamic schemas in the native decoder increases cost and has produced
+    # malformed nested results. Constrain the envelope and result object here;
+    # assess() validates every declared field against the original full schema.
+    if 'result' in schema.get('properties', {}):
+        schema['properties']['result'] = {'type': 'object', 'additionalProperties': True}
     return [str(binary), '--safe-mode', '--restricted', '--print', '--model', request['model'],
             '--effort', effort, '--tools', '', '--strict-mcp-config', '--no-chrome',
             '--no-session-persistence', '--permission-mode', 'dontAsk', '--permission-prompts', 'none',
@@ -254,6 +351,7 @@ def execute(request: dict, raw: bytes, args) -> dict:
         _save(destination / 'request.json', {'argv': argv, 'input_sha256': file_hash(raw),
                                           'cli_input_sha256': file_hash(sent), 'call_allowance_usd': call_allowance})
         start = monotonic()
+        interrupted = False
         with tempfile.TemporaryDirectory(prefix='reading-pack-worker-empty-') as cwd, \
                 (destination / 'raw.jsonl').open('xb') as output, (destination / 'stderr.txt').open('xb') as error:
             process = subprocess.Popen(argv, cwd=cwd, env={**os.environ, **SETTINGS,
@@ -264,11 +362,10 @@ def execute(request: dict, raw: bytes, args) -> dict:
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
-                _save(destination / 'audit.json', {'valid': False, 'issues': ['timeout'], 'total_cost_usd': None})
-                raise ReadingPackError('Claude CLI timed out; outcome saved')
+                interrupted = True
         try:
             events = [_strict_json_loads(line) for line in (destination / 'raw.jsonl').read_text().splitlines() if line.strip()]
-            result, audit = assess(events, process.returncode, request['response_schema'], args.model)
+            result, audit = assess(events, process.returncode, request['response_schema'], args.model, interrupted=interrupted)
         except (ValueError, TypeError, KeyError, AttributeError):
             _save(destination / 'audit.json', {'valid': False, 'issues': ['invalid_stream'], 'total_cost_usd': None})
             raise ReadingPackError('invalid Claude CLI stream')

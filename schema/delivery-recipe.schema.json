@@ -109,6 +109,21 @@
       "exclusiveMinimum": 0,
       "maximum": 1000000
     },
+    "repair_rounds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "repair_call_allowance_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
+    "unknown_call_reserve_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
     "prior_cost_usd": {
       "type": "number",
       "minimum": 0,
@@ -166,6 +181,11 @@
       "minimum": 1,
       "maximum": 600,
       "description": "Controller timeout for the whole-Pack evaluation call; defaults to timeout_seconds."
+    },
+    "repair_available_chapters": {
+      "type": "boolean",
+      "default": false,
+      "description": "Explicit partial repair: repair only chapters with completed generation and initial evaluation; preserve all missing chapters and incomplete delivery status."
     }
   },
   "required": [

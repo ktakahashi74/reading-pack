@@ -32,6 +32,9 @@ def register(commands: argparse._SubParsersAction) -> None:
     delivery_recipe.add_argument('--global-call-allowance-usd', type=float, help='allowance for the whole-Pack evaluation call')
     delivery_recipe.add_argument('--evaluator-timeout-seconds', type=int, help='controller timeout for chapter evaluation calls')
     delivery_recipe.add_argument('--global-timeout-seconds', type=int, help='controller timeout for the whole-Pack evaluation call')
+    delivery_recipe.add_argument('--repair-rounds', type=int, choices=(0, 1), default=0, help='explicitly enable one source-grounded repair round and reevaluation')
+    delivery_recipe.add_argument('--repair-call-allowance-usd', type=float)
+    delivery_recipe.add_argument('--unknown-call-reserve-usd', type=float, help='provisional reserve per call without a reported cost; defaults to its allowance')
     deliver = sub.add_parser('deliver', help='recommended: generate and deliver quality reports; user decides adoption')
     deliver.add_argument('source', type=Path, nargs='?')
     deliver.add_argument('--run', type=Path, required=True)
@@ -41,6 +44,8 @@ def register(commands: argparse._SubParsersAction) -> None:
     deliver.add_argument('--format', choices=('markdown', 'org', 'text'))
     deliver.add_argument('--chapter-level', type=int, choices=range(1, 9))
     deliver.add_argument('--seed', type=Path, help='existing Reading Pack project whose author-provided modules are carried unchanged')
+    deliver.add_argument('--inherit-seed', action='store_true', help='explicitly carry old modules; default is fresh generation of all modules')
+    deliver.add_argument('--mechanical-inputs', type=Path, help='source-hash-bound section pages and confirmed name aliases (JSON)')
     deliver.add_argument('--chapter-map', type=Path, help='JSON object: seed chapter id -> exact manuscript heading')
     deliver.add_argument('--seed-policy', choices=('preserve', 'regenerate'), default='preserve',
                          help='preserve: fill only empty seed summaries/terms; regenerate: replace them as drafts')
@@ -149,7 +154,9 @@ def command_pipeline(args: argparse.Namespace) -> int:
             timeout_seconds=args.timeout_seconds, prior_cost_usd=args.prior_cost_usd,
             cumulative_cost_limit_usd=args.cumulative_cost_limit_usd, language=args.language, scope=args.scope,
             global_call_allowance_usd=args.global_call_allowance_usd,
-            evaluator_timeout_seconds=args.evaluator_timeout_seconds, global_timeout_seconds=args.global_timeout_seconds)
+            evaluator_timeout_seconds=args.evaluator_timeout_seconds, global_timeout_seconds=args.global_timeout_seconds,
+            unknown_call_reserve_usd=args.unknown_call_reserve_usd,
+            repair_rounds=args.repair_rounds, repair_call_allowance_usd=args.repair_call_allowance_usd)
         write_json(args.output, value)
         print(f'created {args.output}')
         return 0
@@ -158,7 +165,7 @@ def command_pipeline(args: argparse.Namespace) -> int:
         if args.predecessor is not None:
             if args.source is not None or args.recipe is None:
                 raise ReadingPackError('a successor delivery takes --predecessor and --recipe, not a manuscript')
-            if args.title or args.author or args.format or args.chapter_level or args.seed or args.chapter_map or args.seed_policy != 'preserve':
+            if args.title or args.author or args.format or args.chapter_level or args.seed or args.inherit_seed or args.chapter_map or args.mechanical_inputs or args.seed_policy != 'preserve':
                 raise ReadingPackError('a successor delivery inherits manuscript, structure and seed from its predecessor')
             result = prepare_successor(args.run, args.predecessor, _read(args.recipe), output=args.output)
         elif args.source is not None:
@@ -167,10 +174,11 @@ def command_pipeline(args: argparse.Namespace) -> int:
             result = prepare(args.run, args.source, _read(args.recipe), title=args.title, author=args.author,
                              source_format=args.format, chapter_level=args.chapter_level, seed=args.seed,
                              chapter_map=_read(args.chapter_map) if args.chapter_map else None,
-                             seed_policy=args.seed_policy, output=args.output)
+                             seed_policy=args.seed_policy, inherit_seed=args.inherit_seed, output=args.output,
+                             mechanical_inputs=_read(args.mechanical_inputs) if args.mechanical_inputs else None)
         else:
             if (args.recipe or args.title or args.author or args.format or args.chapter_level or args.seed
-                    or args.chapter_map or args.seed_policy != 'preserve' or args.output):
+                    or args.inherit_seed or args.chapter_map or args.mechanical_inputs or args.seed_policy != 'preserve' or args.output):
                 raise ReadingPackError('resume uses frozen delivery settings; do not supply replacements')
             result = status(args.run)
         if not args.prepare_only:

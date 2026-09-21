@@ -4,6 +4,17 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
+- Add an explicitly enabled single repair round for fresh deliveries: source- and finding-bound patches, per-finding dispositions, preserved first-pass artifacts, and new evaluations for changed chapters and the final Pack. Reserve both passes before sending; never reuse initial scores for changed content or auto-adopt by score.
+
+
+- Add source-bound section pages and confirmed name aliases to fresh deliveries, range-safe whitespace quote recovery, stopped-CLI output recovery, byte-fixed evaluation successors, and complete cost-chain accounting with explicit unknown-cost reserves. Preserve raw exchanges and draft approval boundaries.
+
+
+- Validate full Claude responses against the frozen schema locally while using a bounded native transport schema; avoid duplicated dynamic schemas, and prune/audit only undeclared keys without changing declared values. Stop dispatch and successor preparation for unresolved failed calls. Omit empty optional uncertainty fields during canonical mapping without inventing content.
+
+- Default report-only deliveries to fresh generation of every content module from the current source. Require `--inherit-seed` alongside `--seed` to carry old records; reject implicit inheritance before dispatch.
+- Evaluate all freshly generated auxiliary records and module absence reasons, count their provenance/evidence checks, and distinguish incomplete generation/evaluation from `delivered`. Preserve explicit-inheritance and frozen predecessor semantics; low scores still do not trigger repairs or acceptance.
+
 ### Changed
 
 - Replace the one-touch `web-core-index-v2` delivery profile with `web-core-index-v3`, which defers `PROPS` alongside `MIS`, `NAMES`, and `GLOSS`. A Pack with 95 claims pushed the English v2 core to 81,333 characters, past the 80,000-character budget; v3 brings that core to about 30,000 characters without relaxing the budget. Deferred modules are now derived from one constant, so artifact rendering, the entry prompt, manifest, verification, and `delivery measure` stay in step. Published v2 bundles are unaffected. Sites with stable retrieval URLs must add a `props.txt` route. Production adoption still requires the same on-device ChatGPT test as v2 ([design](docs/reading-pack-web-core-index-v3-design.ja.md)).

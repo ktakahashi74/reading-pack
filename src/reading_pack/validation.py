@@ -265,6 +265,24 @@ def _validate_data(lang: str, data: dict[str, Any], config: dict[str, Any], issu
             chapter_ids = {r.get("id") for r in records if isinstance(r, dict)}
         if collection == "certainty":
             certainty_ids = {r.get("id") for r in records if isinstance(r, dict)}
+    sections_seen = set()
+    page_entries = data.get("section_pages", [])
+    chapter_map = {c.get("id"): c for c in data.get("chapters", []) if isinstance(c, dict)}
+    for index, entry in enumerate(page_entries if isinstance(page_entries, list) else []):
+        if not isinstance(entry, dict):
+            continue
+        location = f"{base}.section_pages[{index}]"
+        cid, sid = entry.get("chapter_id"), entry.get("section_id")
+        if isinstance(sid, str):
+            if sid in sections_seen:
+                _issue(issues, "RP115", location, "duplicate section page ID")
+            sections_seen.add(sid)
+        if isinstance(cid, str) and (cid not in chapter_map or entry.get("title") not in chapter_map[cid].get("sections", [])):
+            _issue(issues, "RP118", location, "page entry must name an existing chapter and section heading")
+        for field in ("title", "section_id", "chapter_id"):
+            value = entry.get(field)
+            if isinstance(value, str) and UNSAFE_RENDERED_TEXT.search(value):
+                _issue(issues, "RP124", location + "." + field, "must be one safe output line")
     max_summary = config.get("limits", {}).get("max_summary_characters", 500)
     for index, chapter in enumerate(data.get("chapters", [])):
         if isinstance(chapter, dict) and len(chapter.get("summary", "")) > max_summary:
