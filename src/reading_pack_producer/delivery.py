@@ -23,8 +23,12 @@ from .delivery_outline import outline
 from .pipeline import _seal, _unseal, _lock, _engine_hash, _copy_seed, _inventory
 from .delivery_seed import (POLICIES, align_units, author_input_modes, completeness, draft_config_text,
                             load_seed, merge_seed_data, parse_chapter_map)
+from .delivery_fresh import (full_schema, full_evaluation_schema, module_records, chapter_records,
+                             full_completeness, PROMPT as FRESH_PROMPT)
 from .pipeline_resources import adapter_receipt
 from .work_ledger import artifact_hash
+from .delivery_mechanical import freeze_inputs, enrich
+from .delivery_costs import history as cost_history, totals as cost_totals, own_costs
 
 
 def _validate_recipe(value):
@@ -42,11 +46,12 @@ def digest(path):
 def recipe(generator, evaluator, *, generator_model, evaluator_model, max_cost_usd,
            call_allowance_usd, max_wall_seconds, timeout_seconds=300, prior_cost_usd=0,
            cumulative_cost_limit_usd=None, language='ja', scope='Supplied manuscript only',
-           global_call_allowance_usd=None, evaluator_timeout_seconds=None, global_timeout_seconds=None):
+           global_call_allowance_usd=None, evaluator_timeout_seconds=None, global_timeout_seconds=None,
+           unknown_call_reserve_usd=None, repair_rounds=0, repair_call_allowance_usd=None):
     value = {'contract_version': VERSION, 'workers': {
         'generator': {'command': generator, 'model': generator_model},
         'evaluator': {'command': evaluator, 'model': evaluator_model}},
-        'language': language, 'scope': scope, 'max_cost_usd': max_cost_usd,
+        'language': language, 'scope': scope, 'max_cost_usd': max_cost_usd, 'repair_rounds': repair_rounds,
         'call_allowance_usd': call_allowance_usd, 'max_wall_seconds': max_wall_seconds,
         'timeout_seconds': timeout_seconds, 'local_reserve_seconds': 120,
         'prior_cost_usd': prior_cost_usd,
@@ -55,7 +60,9 @@ def recipe(generator, evaluator, *, generator_model, evaluator_model, max_cost_u
         'max_chapters': 128, 'max_sections_per_chapter': 64}
     for key, item in (('global_call_allowance_usd', global_call_allowance_usd),
                       ('evaluator_timeout_seconds', evaluator_timeout_seconds),
-                      ('global_timeout_seconds', global_timeout_seconds)):
+                      ('global_timeout_seconds', global_timeout_seconds),
+                      ('unknown_call_reserve_usd', unknown_call_reserve_usd),
+                      ('repair_call_allowance_usd', repair_call_allowance_usd)):
         if item is not None:
             value[key] = item
     _validate_recipe(value)
@@ -64,9 +71,11 @@ def recipe(generator, evaluator, *, generator_model, evaluator_model, max_cost_u
 
 def _limits(value, key, role):
     """Per-call allowance and controller timeout; the whole-Pack call may differ."""
-    if key == 'evaluate/global':
+    if key in ('evaluate/global', 'reevaluate/global'):
         return (value.get('global_call_allowance_usd', value['call_allowance_usd']),
                 value.get('global_timeout_seconds', value['timeout_seconds']))
+    if key.startswith('repair/'):
+        return value.get('repair_call_allowance_usd', value['call_allowance_usd']), value['timeout_seconds']
     if role == 'evaluator':
         return value['call_allowance_usd'], value.get('evaluator_timeout_seconds', value['timeout_seconds'])
     return value['call_allowance_usd'], value['timeout_seconds']
@@ -82,9 +91,13 @@ def _reservation(value, work):
     return len(work), reservation, seconds + value['local_reserve_seconds']
 
 
-def _work(units):
-    return ([('generate/' + u['id'], 'generator') for u in units]
+def _work(units, repair_rounds=0):
+    work = ([('generate/' + u['id'], 'generator') for u in units]
             + [('evaluate/' + u['id'], 'evaluator') for u in units] + [('evaluate/global', 'evaluator')])
+    if repair_rounds:
+        work += [('repair/' + u['id'], 'generator') for u in units]
+        work += [('reevaluate/' + u['id'], 'evaluator') for u in units] + [('reevaluate/global', 'evaluator')]
+    return work
 
 
 def _bindings(workers):
@@ -106,9 +119,13 @@ def _bindings(workers):
 
 
 def prepare(root, source, value, *, title=None, author='', source_format=None, chapter_level=None,
-            seed=None, chapter_map=None, seed_policy='preserve', output=None):
+            seed=None, chapter_map=None, seed_policy='preserve', inherit_seed=False, output=None, mechanical_inputs=None):
     root, source = Path(root).absolute(), Path(source).resolve()
     output = _output_path(root, output)
+    if seed is not None and not inherit_seed:
+        raise ReadingPackError('--seed requires explicit --inherit-seed; omit both to regenerate all modules')
+    if inherit_seed and seed is None:
+        raise ReadingPackError('--inherit-seed requires --seed')
     if seed_policy not in POLICIES:
         raise ReadingPackError('seed policy must be one of ' + ', '.join(POLICIES))
     if seed is None and (chapter_map is not None or seed_policy != 'preserve'):
@@ -124,6 +141,8 @@ def prepare(root, source, value, *, title=None, author='', source_format=None, c
     if root.exists():
         raise ReadingPackError('refusing to overwrite delivery run; resume its frozen plan instead')
     _validate_recipe(value)
+    if seed is not None and value.get('repair_rounds', 0):
+        raise ReadingPackError('repair round requires fresh generation, not inherited seed content')
     fmt = source_format or {'.md': 'markdown', '.org': 'org', '.txt': 'text'}.get(source.suffix.lower())
     if fmt not in {'markdown', 'org', 'text'}:
         raise ReadingPackError('delivery requires a Markdown, Org or text manuscript; extract other formats first')
@@ -143,7 +162,10 @@ def prepare(root, source, value, *, title=None, author='', source_format=None, c
         raise ReadingPackError('outline exceeds frozen chapter/section limits')
     if any(u['end'] - u['start'] > value['max_chapter_characters'] for u in units):
         raise ReadingPackError('chapter exceeds context limit; explicitly split the source before preparing')
-    calls, reservation, seconds = _reservation(value, _work(units))
+    mechanical = freeze_inputs(mechanical_inputs, text, units)
+    if seed is not None and mechanical is not None:
+        raise ReadingPackError('mechanical inputs apply to fresh deliveries, not inherited seed content')
+    calls, reservation, seconds = _reservation(value, _work(units, value.get('repair_rounds', 0)))
     _admit(value, calls, reservation, seconds)
     bindings = _bindings(value['workers'])
     root.mkdir(parents=True, mode=0o700)
@@ -160,10 +182,12 @@ def prepare(root, source, value, *, title=None, author='', source_format=None, c
             'recipe': copy.deepcopy(value), 'source_name': source.name, 'source_format': fmt,
             'source_sha256': digest(root / 'source.bin'), 'normalized_sha256': digest(root / 'source.txt'),
             'title': title, 'author': author, 'chapter_level': chapter_level, 'units': units, 'seed': seed_plan,
+            'content_mode': 'inherit' if seed is not None else 'fresh',
+            'mechanical_inputs': mechanical, 'cost_history': [], 'cost_base_prior_usd': str(value['prior_cost_usd']),
             'output': str(output),
             'rubric': copy.deepcopy(RUBRIC), 'adapter_files': bindings,
             'maximum_calls': calls, 'reserved_usd': str(reservation),
-            'repair_calls': 0, 'automatic_retries': 0, 'quality_gate': False}
+            'repair_calls': len(units) if value.get('repair_rounds', 0) else 0, 'automatic_retries': 0, 'quality_gate': False}
     _seal(root / 'delivery-plan.json', plan)
     _seal(root / 'delivery-state.json', {'state': 'prepared', 'started_at': None, 'jobs': {}, 'outputs': {}})
     return status(root)
@@ -188,20 +212,48 @@ def prepare_successor(root, predecessor, value, *, output=None):
     old_plan, old_state = _load(predecessor)
     if old_state['state'] not in {'delivered', 'delivered_partial', 'generation_failed'}:
         raise ReadingPackError('a successor requires a finished predecessor delivery')
+    uncertain = [key for key, job in old_state['jobs'].items()
+                 if job.get('status') != 'completed' and (job.get('status') == 'outcome_unknown'
+                 or (job.get('started') and job.get('receipt')
+                     and job['receipt'].get('usage_origin') == 'claude-cli'
+                     and not job['receipt'].get('receipt_valid')
+                     and job['receipt'].get('actual_cost_usd') is None))]
+    if uncertain:
+        raise ReadingPackError('predecessor has unknown call outcomes/costs; resolve or recover saved outputs '
+                               'before preparing a successor: ' + ', '.join(uncertain))
     old = old_plan['recipe']
     if value['language'] != old['language'] or value['scope'] != old['scope']:
         raise ReadingPackError('successor must keep the predecessor language and scope')
     for role in ('generator', 'evaluator'):
         if value['workers'][role]['model'] != old['workers'][role]['model']:
             raise ReadingPackError('successor must keep the predecessor models; compare models in a new delivery instead')
+    if value.get('repair_rounds', 0) != old.get('repair_rounds', 0):
+        raise ReadingPackError('successor must keep repair round policy; use a new delivery for changed production scope')
+    if old.get('repair_rounds', 0) and old_state['state'] == 'delivered':
+        raise ReadingPackError('predecessor delivery has nothing to redo')
     units = copy.deepcopy(old_plan['units'])
     completed = {k for k, j in old_state['jobs'].items() if j.get('status') == 'completed'}
-    redo = [(k, role) for k, role in _work(units) if k not in completed]
+    # A partial repair snapshot freezes available chapters and the initial judge.
+    deferred_generation = ([u['id'] for u in units if 'generate/'+u['id'] not in completed]
+        if value.get('repair_available_chapters') and old_state.get('repair_snapshot') else [])
+    redo = [(k, role) for k, role in _work(units, value.get('repair_rounds', 0))
+            if k not in completed and k.split('/', 1)[1] not in deferred_generation]
     if any(k.startswith('generate/') for k, _ in redo) and ('evaluate/global', 'evaluator') not in redo:
         redo.append(('evaluate/global', 'evaluator'))  # a regenerated chapter changes the whole Pack
     if not redo:
         raise ReadingPackError('predecessor delivery has nothing to redo')
+    if value.get('repair_rounds', 0) and any(k.startswith(('generate/', 'repair/')) for k, _ in redo):
+        if ('reevaluate/global', 'evaluator') not in redo:
+            redo.append(('reevaluate/global', 'evaluator'))
     carried = sorted(completed - {k for k, _ in redo})
+    rows, base = cost_history(predecessor, old_plan, old_state)
+    costs = cost_totals(rows, base)
+    value = copy.deepcopy(value)
+    # Keep any extra caller reservation while preventing omitted predecessor costs.
+    previous_minimum = Decimal(cost_totals(rows[:-1], base)['base_plus_chain_and_reserve_usd'])
+    prior_extra = max(Decimal(0), Decimal(str(old['prior_cost_usd'])) - previous_minimum)
+    value['prior_cost_usd'] = float(max(Decimal(str(value['prior_cost_usd'])),
+        Decimal(costs['base_plus_chain_and_reserve_usd']) + prior_extra))
     calls, reservation, seconds = _reservation(value, redo)
     _admit(value, calls, reservation, seconds)
     bindings = _bindings(value['workers'])
@@ -228,18 +280,41 @@ def prepare_successor(root, predecessor, value, *, output=None):
             'recipe': copy.deepcopy(value), 'source_name': old_plan['source_name'], 'source_format': old_plan['source_format'],
             'source_sha256': old_plan['source_sha256'], 'normalized_sha256': old_plan['normalized_sha256'],
             'title': old_plan['title'], 'author': old_plan['author'], 'chapter_level': old_plan['chapter_level'],
+            'content_mode': old_plan.get('content_mode', 'legacy'),
+            'mechanical_inputs': copy.deepcopy(old_plan.get('mechanical_inputs')),
+            'cost_history': rows, 'cost_base_prior_usd': base,
             'units': units, 'seed': seed_plan, 'rubric': copy.deepcopy(old_plan['rubric']), 'adapter_files': bindings,
             'predecessor': {'run': str(predecessor), 'id': old_plan['id'], 'state': old_state['state'],
                             'plan_sha256': digest(predecessor / 'delivery-plan.json'),
                             'state_sha256': digest(predecessor / 'delivery-state.json'),
                             'engine_sha256': old_plan['engine_sha256']},
             'carried': carried, 'redo': [k for k, _ in redo], 'output': str(output),
+            'deferred_generation': deferred_generation,
             'maximum_calls': calls, 'reserved_usd': str(reservation),
-            'repair_calls': 0, 'automatic_retries': 0, 'quality_gate': False}
+            'repair_calls': len(units) if value.get('repair_rounds', 0) else 0, 'automatic_retries': 0, 'quality_gate': False}
     if digest(root / 'source.bin') != plan['source_sha256'] or digest(root / 'source.txt') != plan['normalized_sha256']:
         raise ReadingPackError('predecessor source changed')
+    repair_snapshot = None
+    if value.get('repair_rounds', 0) and old_state.get('repair_snapshot') and not any(k.startswith('generate/') for k, _ in redo):
+        repair_snapshot = copy.deepcopy(old_state['repair_snapshot'])
+        for name, expected in repair_snapshot.items():
+            shutil.copyfile(predecessor/name, root/name)
+            if digest(root/name) != expected:
+                raise ReadingPackError('first-pass repair snapshot changed')
+    if not any(k.startswith('generate/') for k, _ in redo):
+        # Evaluations must inspect the exact predecessor artifact, even on another date/engine.
+        lang = value['language']; name = f'reading-pack.{lang}.md'
+        shutil.copytree(predecessor / 'project', root / 'project')
+        shutil.copyfile(predecessor / name, root / name)
+        if repair_snapshot:
+            shutil.copyfile(root/f'first-pass-reading-pack.{lang}.md', root/name)
+            shutil.copyfile(root/f'first-pass-reading-pack.{lang}.md', root/'project'/'dist'/name)
+            shutil.copyfile(root/f'first-pass-pack.{lang}.json', root/'project'/'data'/f'pack.{lang}.json')
+        plan['frozen_artifact'] = {'pack_sha256': digest(root / name),
+            'project_inventory': _inventory(root / 'project'),
+            'seed_log': json.loads((predecessor / 'quality-report.json').read_text()).get('completeness', {}).get('chapters')}
     _seal(root / 'delivery-plan.json', plan)
-    _seal(root / 'delivery-state.json', {'state': 'prepared', 'started_at': None, 'jobs': jobs, 'outputs': {}})
+    _seal(root / 'delivery-state.json', {'state': 'prepared', 'started_at': None, 'jobs': jobs, 'outputs': {}, 'repair_snapshot': repair_snapshot})
     return status(root)
 
 
@@ -251,7 +326,8 @@ def _output_path(root, output):
     return output
 
 
-EXPORTED = ('reading-pack.{lang}.md', 'quality-report.{lang}.md', 'quality-report.json', 'project/data/pack.{lang}.json')
+EXPORTED = ('reading-pack.{lang}.md', 'quality-report.{lang}.md', 'quality-report.json', 'project/data/pack.{lang}.json',
+            'repair-report.json', 'first-pass-reading-pack.{lang}.md', 'first-pass-pack.{lang}.json', 'first-pass-quality-report.json')
 WITHHELD = ('source.bin', 'source.txt', 'jobs/', 'seed/', 'project/ (except data/pack.<lang>.json)', 'delivery-plan.json', 'delivery-state.json')
 
 
@@ -329,8 +405,16 @@ def _load(root):
         raise ReadingPackError('frozen delivery source changed')
     if plan.get('seed') is not None and _inventory(root / 'seed') != plan['seed']['inventory']:
         raise ReadingPackError('delivery seed snapshot changed')
+    for name, expected in (state.get('repair_snapshot') or {}).items():
+        if name not in {'first-pass-reading-pack.ja.md', 'first-pass-reading-pack.en.md', 'first-pass-pack.ja.json', 'first-pass-pack.en.json', 'first-pass-quality-report.json'} or digest(root/name) != expected:
+            raise ReadingPackError('first-pass repair snapshot changed')
+    if plan.get('frozen_artifact') and not state.get('repair_snapshot'):
+        artifact = plan['frozen_artifact']
+        if (digest(root / f"reading-pack.{plan['recipe']['language']}.md") != artifact['pack_sha256']
+                or _inventory(root / 'project') != artifact['project_inventory']):
+            raise ReadingPackError('frozen evaluation artifact changed')
     for name, expected in state['outputs'].items():
-        if name not in {'reading-pack.ja.md', 'reading-pack.en.md', 'quality-report.json', 'quality-report.ja.md', 'quality-report.en.md', 'project/data/pack.ja.json', 'project/data/pack.en.json'}:
+        if name not in {'reading-pack.ja.md', 'reading-pack.en.md', 'quality-report.json', 'quality-report.ja.md', 'quality-report.en.md', 'project/data/pack.ja.json', 'project/data/pack.en.json', 'repair-report.json', 'repaired-generation.json'}:
             raise ReadingPackError('unexpected delivery output binding')
         if digest(root / name) != expected:
             raise ReadingPackError('delivery output changed: ' + name)
@@ -345,13 +429,14 @@ def status(root):
     root = Path(root)
     plan, state = _load(root)
     return {'contract_version': VERSION, 'state': state['state'], 'quality_gate': False,
-            'scope': plan['recipe']['scope'], 'source_name': plan['source_name'],
+            'scope': plan['recipe']['scope'], 'content_mode': plan.get('content_mode', 'legacy'),
+            'source_name': plan['source_name'],
             'source_sha256': plan['source_sha256'], 'outline': plan['units'],
             'models': {role: worker['model'] for role, worker in plan['recipe']['workers'].items()},
             'maximum_wall_seconds': plan['recipe']['max_wall_seconds'],
             'prior_cost_usd': plan['recipe']['prior_cost_usd'],
             'cumulative_cost_limit_usd': plan['recipe']['cumulative_cost_limit_usd'],
-            'maximum_calls': plan['maximum_calls'],
+            'maximum_calls': plan['maximum_calls'], 'repair_rounds': plan['recipe'].get('repair_rounds', 0),
             'calls_started': sum(bool(j.get('started')) and not j.get('carried') for j in state['jobs'].values()),
             'reserved_usd': plan['reserved_usd'], 'chapter_count': len(plan['units']),
             'section_count': sum(len(u['sections']) for u in plan['units']), 'outputs': state['outputs'],
@@ -396,11 +481,20 @@ def _call(root, plan, state, key, role, stage, payload, schema, prompt):
            'allowance_usd': allowance, 'timeout_seconds': timeout}
     state['jobs'][key] = job
     elapsed = time.time() - state['started_at']
+    spent = own_costs(plan, state)
+    committed = Decimal(spent['known_usd']) + Decimal(spent['unknown_reserve_usd'])
+    next_reservation = max(Decimal(str(allowance)), Decimal(str(value.get('unknown_call_reserve_usd', allowance))))
     if elapsed + timeout + value['local_reserve_seconds'] > value['max_wall_seconds']:
         job.update(status='not_run', error='deadline reservation unavailable')
+    elif (committed + next_reservation > Decimal(str(value['max_cost_usd']))
+          or Decimal(str(value['prior_cost_usd'])) + committed + next_reservation > Decimal(str(value['cumulative_cost_limit_usd']))):
+        job.update(status='not_run', error='cumulative cost/reserve unavailable')
     elif len(json.dumps(request, ensure_ascii=False).encode()) > 1024 * 1024:
         job.update(status='not_run', error='request exceeds fixed 1 MiB transport bound')
-    elif any(j.get('status') == 'outcome_unknown' for j in state['jobs'].values()):
+    elif any(j.get('status') == 'outcome_unknown' or (not j.get('carried')
+             and j.get('receipt') and j['receipt'].get('usage_origin') == 'claude-cli'
+             and j['receipt'].get('actual_cost_usd') is None)
+             for j in state['jobs'].values()):
         job.update(status='not_run', error='prior call outcome unknown')
     else:
         exceeded = [j for j in state['jobs'].values()
@@ -450,6 +544,17 @@ def _canonical(root, plan, generated):
         return merge_seed_data(_seed_data(root, plan), plan, generated, source)
     data = empty_language_data(value['language'], plan['title'], plan['author'])
     data['source'] = source
+    if plan.get('content_mode') == 'fresh':
+        data['book']['contents_note'] = value['scope']
+        missing = [u['id'] for u in plan['units'] if u['id'] not in generated]
+        if missing:
+            done_sections = sum(len(u['sections']) for u in plan['units'] if u['id'] in generated)
+            total_sections = sum(len(u['sections']) for u in plan['units'])
+            names = ', '.join(missing[:12]) + (' ...' if len(missing)>12 else '')
+            note = (f' 現在の生成済み範囲: {len(generated)}/{len(plan["units"])}章、{done_sections}/{total_sections}節。未生成章: {names}。対象範囲の宣言は制作完了を意味しない。'
+                    if value['language']=='ja' else
+                    f' Current generated coverage: {len(generated)}/{len(plan["units"])} chapters, {done_sections}/{total_sections} sections. Ungenerated: {names}. Declared scope is not completed coverage.')
+            data['book']['contents_note'] += note
     for unit in plan['units']:
         content = generated.get(unit['id'])
         data['chapters'].append({'id': unit['id'], 'kind': 'chapter', 'title': unit['title'],
@@ -463,6 +568,11 @@ def _canonical(root, plan, generated):
                     'kind': 'section_overview', 'statement': statement, 'chapter_ids': [unit['id']],
                     'reader_note': section['title'], 'status': 'draft',
                     'source_locations': [f"source.txt#normalized-text:{section['start']}-{section['end']}"]})
+    if plan.get('content_mode') == 'fresh':
+        for unit in plan['units']:
+            for name, records in module_records(unit, generated.get(unit['id'])).items():
+                data[name].extend(records)
+    enrich(data, plan)
     return data, None
 
 
@@ -504,6 +614,29 @@ def _own_ids(units):
     return {u['id'] for u in units} | {'CP-' + s['id'] for u in units for s in u['sections']}
 
 
+
+def evaluation_payload(plan, unit, data, generated, text):
+    payload = {'language': plan['recipe']['language'], 'source_text': text[unit['start']:unit['end']],
+               'source_start': unit['start'], 'chapter': unit, 'rubric': plan['rubric'],
+               'records': [c for c in data['chapters'] if c['id'] == unit['id']] +
+                          [c for c in data['claims'] if c['id'] in _own_ids([unit])]}
+    if plan.get('content_mode') == 'fresh':
+        payload['records'] = chapter_records(data, unit, generated)
+        payload['module_decisions'] = {name: {'items_count': len(module['items']), 'omission_reason': module['omission_reason']}
+                                       for name, module in generated['modules'].items()}
+    return payload
+
+
+def evaluation_prompt(fresh):
+    return EVALUATION_PROMPT + (' Inspect EVERY auxiliary record too, and each module selection or absence reason. '
+        'Do not require arbitrary item counts. Flag unsupported omissions and missing central material in module_review. '
+        'Use compact evidence anchors: for supported records keep reason and exact source_quote each within '
+        'about 15 Japanese characters. For actual issues explain the specific qualification or discrepancy '
+        'in about 30-60 characters, with the necessary exact quote. Covered-section reasons around 20 '
+        'characters and adequate-module reasons around 30. Do not repeat the full record text. '
+        'Preserve specific qualifications and explain every actual issue despite these brevity targets.' if fresh else '')
+
+
 def run(root):
     root = Path(root)
     with _lock(root):
@@ -516,33 +649,46 @@ def run(root):
             if digest(Path(name)) != expected:
                 raise ReadingPackError('frozen adapter file changed')
         value = plan['recipe']
-        state.update(state='running', started_at=state['started_at'] or time.time())
+        state.update(state='running', started_at=state['started_at'] or time.time(), outputs={})
         _seal(root / 'delivery-state.json', state)
         text = (root / 'source.txt').read_text(encoding='utf-8')
         generated, evaluations = {}, {}
+        fresh = plan.get('content_mode') == 'fresh'
         carried = {k for k, j in state['jobs'].items() if j.get('carried')}
         for unit in plan['units']:
+            if unit['id'] in plan.get('deferred_generation', []):
+                continue
             payload = {'language': value['language'], 'source_text': text[unit['start']:unit['end']],
                        'source_start': unit['start'], 'chapter': unit, 'rubric': plan['rubric']}
             key = 'generate/' + unit['id']
             result = _carried(root, state, key) if key in carried else _call(
-                root, plan, state, key, 'generator', 'generate', payload, generation_schema(unit), GENERATION_PROMPT)
+                root, plan, state, key, 'generator', 'generate', payload, full_schema(unit) if fresh else generation_schema(unit),
+                GENERATION_PROMPT + (' ' + FRESH_PROMPT if fresh else ''))
             if result is not None:
                 generated[unit['id']] = result
             # Deliver even before evaluation, including an explicit partial result.
-            _render(root, plan, _canonical(root, plan, generated)[0])
-        data, seed_log = _canonical(root, plan, generated)
-        pack = _render(root, plan, data)
+            if not plan.get('frozen_artifact') and not state.get('repair_snapshot'):
+                _render(root, plan, _canonical(root, plan, generated)[0])
+        if state.get('repair_snapshot'):
+            data = json.loads((root/f"first-pass-pack.{value['language']}.json").read_text())
+            seed_log = None
+            pack = (root/f"first-pass-reading-pack.{value['language']}.md").read_text()
+            (root/f"reading-pack.{value['language']}.md").write_text(pack)
+        elif plan.get('frozen_artifact'):
+            data = json.loads((root / 'project' / 'data' / f"pack.{value['language']}.json").read_text())
+            seed_log = plan['frozen_artifact'].get('seed_log')
+            pack = (root / f"reading-pack.{value['language']}.md").read_text(encoding='utf-8')
+        else:
+            data, seed_log = _canonical(root, plan, generated)
+            pack = _render(root, plan, data)
         for unit in plan['units']:
             if unit['id'] not in generated:
                 continue
-            payload = {'language': value['language'], 'source_text': text[unit['start']:unit['end']],
-                       'source_start': unit['start'], 'chapter': unit, 'rubric': plan['rubric'],
-                       'records': [c for c in data['chapters'] if c['id'] == unit['id']] +
-                                  [c for c in data['claims'] if c['id'] in _own_ids([unit])]}
+            payload = evaluation_payload(plan, unit, data, generated[unit['id']], text)
             key = 'evaluate/' + unit['id']
             result = _carried(root, state, key) if key in carried else _call(
-                root, plan, state, key, 'evaluator', 'artifact_content', payload, evaluation_schema(unit), EVALUATION_PROMPT)
+                root, plan, state, key, 'evaluator', 'artifact_content', payload, full_evaluation_schema(unit, payload['records']) if fresh else evaluation_schema(unit),
+                evaluation_prompt(fresh))
             if result is not None:
                 evaluations[unit['id']] = result
         global_result = None
@@ -552,14 +698,27 @@ def run(root):
                 {'language': value['language'], 'pack': pack, 'rubric': plan['rubric']}, GLOBAL_SCHEMA, GLOBAL_PROMPT)
         from .delivery_report import build_report, render_report
         report = build_report(root, plan, state, data, generated, evaluations, global_result,
-                              own_ids=_own_ids(plan['units']),
-                              completeness=completeness(_seed_data(root, plan), data, plan, seed_log))
+                              own_ids=None if fresh else _own_ids(plan['units']),
+                              completeness=full_completeness(data, plan, generated) if fresh else
+                              completeness(_seed_data(root, plan), data, plan, seed_log))
+        if value.get('repair_rounds', 0):
+            from .delivery_repair import perform
+            data, generated, evaluations, global_result, repair = perform(
+                root, plan, state, data, generated, evaluations, global_result, text, report)
+            report = build_report(root, plan, state, data, generated, evaluations, global_result,
+                                  own_ids=None, completeness=full_completeness(data, plan, generated))
+            report['repair'] = repair
         write_json(root / 'quality-report.json', report)
         lang = value['language']
         (root / f'quality-report.{lang}.md').write_text(render_report(report, lang), encoding='utf-8')
         state['state'] = ('generation_failed' if not generated else
-                          'delivered' if len(generated) == len(plan['units']) else 'delivered_partial')
+                          'delivered' if (len(generated) == len(plan['units']) and
+                              (not fresh or (len(evaluations) == len(plan['units']) and global_result is not None
+                              and report['mechanical']['nonempty_content']['present'] == report['mechanical']['nonempty_content']['expected']
+                              and report.get('repair', {}).get('complete', True))))
+                          else 'delivered_partial')
         names = [f'reading-pack.{lang}.md', 'quality-report.json', f'quality-report.{lang}.md', f'project/data/pack.{lang}.json']
+        names += [name for name in ('repair-report.json', 'repaired-generation.json') if (root/name).exists()]
         state['outputs'] = {name: digest(root / name) for name in names}
         _seal(root / 'delivery-state.json', state)
     exported = export(root, plan.get('output'))

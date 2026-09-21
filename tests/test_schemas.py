@@ -25,7 +25,7 @@ class SchemaTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1] / "schema"
         paths = sorted(root.glob("*.schema.json"))
         self.assertEqual({path.name for path in paths}, set(SCHEMA_NAMES))
-        self.assertEqual(len(paths), 36)
+        self.assertEqual(len(paths), 37)
         self.assertEqual(set(schemas().schemas), set(SCHEMA_NAMES))
         for path in paths:
             schema = json.loads(path.read_text(encoding="utf-8"))

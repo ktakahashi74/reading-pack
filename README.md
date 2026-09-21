@@ -10,7 +10,7 @@ A Reading Pack points the reader back to the original book. It is not a reproduc
 
 ## Automatic production
 
-The recommended entry for new production is `pipeline deliver`: fixed generation/evaluation calls, a Pack and a quantitative report, with adoption left to the user. Low scores or incomplete evaluation retain the generated Pack. [Delivery workflow](docs/pipeline-delivery.en.md).
+The recommended entry for new production is `pipeline deliver`: fresh generation of all modules and source evaluation of every generated record, a Pack and a quantitative report, with adoption left to the user. Low scores or incomplete evaluation retain the generated Pack. Old records require explicit `--seed PROJECT --inherit-seed`. [Delivery workflow](docs/pipeline-delivery.en.md).
 
 The following describes existing contracts.
 

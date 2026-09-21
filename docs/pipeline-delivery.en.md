@@ -2,6 +2,14 @@
 
 The recommended entry for new production is `pipeline deliver`. The `generation-report-1` workflow delivers a generated Pack and quantitative evaluation within fixed resources. The user decides adoption. Low scores or incomplete evaluation never trigger automatic repair, regeneration or rejection of a generated Pack.
 
+## Fresh generation by default
+
+New runs regenerate every content module from the current source: chapter summaries and terms, section overviews, certainty distinctions, propositions, misreadings, book/Pack policies, names, glossary and references. There are no inherited records by default. Empty modules require specific absence reasons; item limits are ceilings, not quotas. All generated records and module absence decisions are evaluated against the chapter. IDs and source locators are assigned locally.
+
+Old data requires both `--seed PROJECT` and `--inherit-seed`; `--seed` alone is rejected before any call. In that explicit inheritance mode, auxiliary modules remain unchanged and are not re-evaluated against the new source. `--seed-policy regenerate` in inheritance mode replaces chapter content only.
+
+A fresh run is `delivered` only after all generation and evaluation jobs complete and required content is present. Incomplete evaluation or content results in `delivered_partial`, retaining the Pack. Ordinal scores never decide acceptance or trigger automatic repair.
+
 ## Commands
 
 ```sh
@@ -26,7 +34,7 @@ Omit `--prepare-only` to execute immediately after freezing inputs. `pipeline de
 
 ## Outline and bounded work
 
-Direct input is UTF-8 Markdown, Org or text. Prepare verified text from other formats using existing import facilities. Author-provided modules are never imported implicitly: only an explicit `--seed` project carries them, unchanged, while chapter content is generated (next section).
+Direct input is UTF-8 Markdown, Org or text. Prepare verified text from other formats using existing import facilities. Author-provided modules are never imported implicitly: only explicit `--seed PROJECT --inherit-seed` carries them, unchanged, while chapter content is generated (next section).
 
 The controller freezes chapter/section order and source ranges. A single top-level heading with lower headings is ambiguous between a book title and an excerpt chapter: specify `--chapter-level`. Use 1 for a chapter headed by `#` with `##` sections, or 2 when `#` is a book title and `##` denotes chapters. Multiple parent containers are rejected instead of silently dropping parts or back matter. Fenced code headings are ignored. Plain text is treated as a single chapter.
 
@@ -38,11 +46,11 @@ Defaults allow 50000 characters per chapter, 128 chapters and 64 sections per ch
 
 ## Seed projects
 
-`--seed PROJECT` names an existing Reading Pack project, typically the author-reviewed canonical one. Its certainty scale, canonical claims, misreadings and objections, policies, names, glossary and references are carried into the delivery **unchanged**; only chapter summaries, chapter terms and section overviews are generated. Without a seed those modules are empty, and the quality report's completeness section says so explicitly.
+Fresh runs generate these modules from the new source and report justified absences. Explicit inheritance uses `--seed PROJECT --inherit-seed` and preserves the supplied modules.
 
 ```sh
 reading-pack pipeline deliver body.md --run private/run --recipe delivery.json \
-  --chapter-level 1 --seed path/to/canonical-project \
+  --chapter-level 1 --seed path/to/canonical-project --inherit-seed \
   --chapter-map chapter-map.json --prepare-only
 ```
 
@@ -88,3 +96,55 @@ Invalid or failed evaluator responses retain the Pack. Prepared, delivered and p
 ## Existing contracts
 
 `legacy-reader-evaluation-1` and `artifact-acceptance-1` remain available for explicitly frozen workflows. Their results and approvals are preserved, never relabeled as this new contract. Existing production-standard/release conformance requirements remain separate from delivery completion. Delivery does not imply author adoption or publication.
+
+## Claude structured output transport
+
+The full frozen schema is included in the request body. The native output schema constrains the envelope and requires `result` to be an object, avoiding a second copy of large dynamic constraints. Every response is then checked against the original full schema locally. Only undeclared extra keys can be removed, with their paths recorded; declared values, required fields, types, conditions and identity checks remain strict.
+
+A failed Claude call with unknown cost stops later dispatch. A successor is also refused while a non-completed call has an unresolved outcome or unknown failed-call cost. Recovery of saved outputs and provisional cost reserves require explicit evidence; unknown calls are not automatically resent.
+
+## Deterministic corrections and evaluation replay
+
+New deliveries accept `--mechanical-inputs inputs.json`. The input must bind the SHA-256 of the **normalized `source.txt`**, not the PDF or raw Markdown bytes:
+
+```json
+{
+  "source_sha256": "<64 lowercase hex characters>",
+  "section_pages": [{"section_id": "S01-01", "printed_page": 10}],
+  "names": [{"entity_id": "PERSON-1", "canonical": "Confirmed name", "aliases": ["Confirmed variant"]}]
+}
+```
+
+Use the same normalization as `reading_pack_producer.candidates._source_text_snapshot` when preparing this input. Both arrays are optional. Supply a reviewed page map and confirmed identity aliases; spelling similarity is never identity evidence. The controller rejects a different source hash, unknown/duplicate sections, absent canonical names and conflicting aliases before dispatch. Mechanical inputs are frozen in the plan and cannot be substituted on resume or a successor. They are supported for fresh generation, not inherited seed records.
+
+Section start pages are embedded in the Pack, so the whole-Pack evaluator sees the same navigation data as a reader. A start page is not an individual record's exact page. When pages are absent, R7 asks for chapter/section navigation and forbids inferring pages. Name display values are normalized by explicit aliases **before chapter evaluation**; original responses stay untouched, original spellings remain aliases, and every change is reported. Similar names without a confirmed mapping are reported as unconfirmed candidates only.
+
+Evidence diagnostics preserve the model's original quote and exact-match result. A unique whitespace-equivalent match **inside the declared source range** yields an `effective_quote` copied from the original and exact start/end offsets. Ambiguous matches, matches elsewhere and other differences are reported without replacement. This changes neither a content judgment nor the original exchange.
+
+When a CLI budget stop or timeout has already recorded exactly one complete, identity-bound, schema-valid StructuredOutput, the adapter can recover that result without changing values or making another call. The audit and receipt distinguish recovered output from native success. Missing, ambiguous, rejected or malformed output is not repaired automatically. Unknown CLI cost remains unknown and stops subsequent dispatch; a per-call cost overrun also stops subsequent dispatch. The provider's CLI allowance is not a guaranteed hard billing ceiling.
+
+An evaluation-only successor copies and hash-binds the predecessor's Pack and project; it does not render a new date or silently apply new templates. Failed generation successors still rebuild the artifact and reevaluate the global instructions.
+
+`resources.cost_accounting` reports the entire successor chain: known reported cost, unknown calls, provisional reserve, call count, the declared cost before the chain, and any extra budget carry-in. Completed exchanges carried between runs are not counted twice; failed calls are counted. `delivery-recipe --unknown-call-reserve-usd N` sets an explicit provisional reserve per unknown call; the default is that call's allowance. Neither reserve is a bill or a proven bound on an unknown charge. Successor preparation raises an understated `prior_cost_usd` to cover the chain and preserves any larger caller-provided budget carry-in; it rejects an insufficient cumulative cap before sending. The original pre-chain amount remains a declared input, not independently verified billing data.
+
+These mechanisms do not approve draft policies, promote review states, repair semantic content, decide acceptance or trigger publication. Existing frozen runs and past deliveries are not rewritten by a toolkit update.
+
+## Optional single repair round
+
+`pipeline delivery-recipe --repair-rounds 1` explicitly enables a bounded second pass for **fresh** deliveries. The default remains `0`, which only produces the Pack and evaluation reports. The generator also acts as repairer in separate calls; the evaluator reassesses the result. `--repair-call-allowance-usd` optionally sets a repair-call allowance. For N chapters, preparation reserves at most **4N+2 calls**: N generation, N initial chapter evaluations, one initial global evaluation, up to N chapter repairs, up to N chapter reevaluations, and one final global evaluation. Skipped work is not sent. There is no second repair round or automatic quality gate.
+
+Initial generation and all initial evaluations must complete before repair starts. The repairer receives the entire chapter source, initial generated records, the allowed edit schemas, and identified findings from chapter/global evaluation and quote checks. Each finding gets a changed/no-change/out-of-scope disposition. Findings are fallible: the prompt explicitly permits rejecting an incorrect criticism and prohibits treating an unapproved draft as a content defect.
+
+Changes are addressed to a chapter summary, terms, section overview, or auxiliary item. A reported omission or classification can also justify adding/removing an auxiliary item. Each change must cite a linked finding, an allowed target, and an exact source quotation in a declared chapter section. The controller applies a chapter's changes atomically, then validates the complete generation schema. A bad quote, out-of-scope edit, inconsistent disposition, or invalid replacement rejects that chapter's patch; it is reported, never silently applied or retried. This structural/source-anchor validation does not prove the revised content is semantically correct.
+
+SYS instructions, rights, approval states and release metadata are outside the editable targets. Global criticisms about those fields remain visible as out-of-scope findings; this round does not rewrite tool rules or grant approval. Changed chapters receive new source evaluations; if the rendered Pack changes, the whole-Pack evaluation is repeated. Missing final evaluations stay missing, never replaced by the first-pass scores. Unchanged content retains its hash-bound original evaluation. Negative final scores do not trigger another repair, acceptance or publication.
+
+Exports include `first-pass-reading-pack.<lang>.md`, `first-pass-pack.<lang>.json`, `first-pass-quality-report.json`, and `repair-report.json`, in addition to the final Pack/reports. Repair changes and dispositions are retained alongside the initial and final evaluations. The internal `repaired-generation.json` stays in the private run. An explicit successor retains the repair-round policy, copies the initial snapshot and completed exchanges, and retries only incomplete/rejected work under a new frozen cost reservation. It never reopens a finished repair round just because the final score is low.
+
+Explicit partial repair may set `repair_available_chapters: true` in the recipe. Only chapters with completed generation and initial source evaluation are repaired. Missing chapters stay in the original scope and denominators; delivery and overall repair remain incomplete. The default is false, requiring all initial chapters before repair.
+
+An array wrapped only as `{"items": [...]}` may be recovered without changing any element, order, or judgment. Extra wrapper keys, invalid elements, identity errors, or failed executions prevent recovery. Full-schema validation is mandatory; normalized paths and the original schema failure remain in the audit.
+
+A global chapter finding may target its auxiliary items; a record finding remains record-scoped. Partial reassessment freezes the initial artifact and ungenerated chapters rather than retrying them. Partial Packs state generated coverage and missing chapters.
+
+Array recovery also permits objects containing only contiguous zero-based numeric keys. Numeric order is preserved; gaps, extra keys, or invalid elements are rejected.

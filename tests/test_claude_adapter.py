@@ -36,6 +36,63 @@ def events_for(outputs):
 
 
 class ClaudeAuditTests(unittest.TestCase):
+    def test_referenced_record_extra_key_recovery_preserves_declared_values(self):
+        schema=copy.deepcopy(SCHEMA)
+        schema['$defs']={'finding':{'type':'object','properties':{'valid':{'type':'boolean'}},
+            'patternProperties':{'^note_':{'type':'string'}},'required':['valid'],'additionalProperties':False}}
+        schema['properties']['result']={'$ref':'#/$defs/finding'}
+        value=copy.deepcopy(RESPONSE);value['result'].update(note_kept='evidence',verdter='')
+        events=events_for([value]);before=copy.deepcopy(events)
+        result,audit=assess(events,0,schema,MODEL)
+        self.assertTrue(audit['valid'])
+        self.assertEqual(audit['salvaged_additional_properties'],['/result/verdter'])
+        self.assertEqual(result['structured_output']['result'],{'valid':False,'note_kept':'evidence'})
+        self.assertEqual(events,before)
+        value['result']['valid']='not a boolean'
+        _,audit=assess(events_for([value]),0,schema,MODEL)
+        self.assertFalse(audit['valid'])
+        self.assertNotIn('salvaged_additional_properties',audit)
+
+    def test_unambiguous_array_wrapper_recovery_preserves_values_and_raw_events(self):
+        schema=copy.deepcopy(SCHEMA)
+        schema['properties']['result']={'type':'object','properties':{'limitations':{'type':'array','items':{'type':'string'}}},'required':['limitations'],'additionalProperties':False}
+        response=copy.deepcopy(RESPONSE);response['result']={'limitations':{'items':['First.', 'Second.']}}
+        events=events_for([response]);before=copy.deepcopy(events)
+        result,audit=assess(events,0,schema,MODEL)
+        self.assertTrue(audit['valid'])
+        self.assertFalse(audit['native_schema_valid'])
+        self.assertEqual(audit['normalized_array_wrappers'],['/result/limitations'])
+        self.assertEqual(result['structured_output']['result']['limitations'],['First.', 'Second.'])
+        self.assertEqual(events,before)
+
+    def test_array_wrapper_recovery_rejects_extra_keys_and_invalid_elements(self):
+        schema=copy.deepcopy(SCHEMA)
+        schema['properties']['result']={'type':'object','properties':{'limitations':{'type':'array','items':{'type':'string'}}},'required':['limitations'],'additionalProperties':False}
+        for wrapped in ({'items':['a'],'note':'extra'}, {'items':[False]}, {'items':'a'}):
+            response=copy.deepcopy(RESPONSE);response['result']={'limitations':wrapped}
+            _,audit=assess(events_for([response]),0,schema,MODEL)
+            self.assertFalse(audit['valid']);self.assertNotIn('normalized_array_wrappers',audit)
+
+    def test_array_wrapper_recovery_cannot_bypass_identity_or_execution_failure(self):
+        schema=copy.deepcopy(SCHEMA)
+        schema['properties']['result']={'type':'object','properties':{'limitations':{'type':'array','items':{'type':'string'}}},'required':['limitations'],'additionalProperties':False}
+        response=copy.deepcopy(RESPONSE);response['result']={'limitations':{'items':['a']}}
+        for code,model in ((1,MODEL),(0,'foreign-model')):
+            _,audit=assess(events_for([response]),code,schema,model)
+            self.assertFalse(audit['valid']);self.assertNotIn('normalized_array_wrappers',audit)
+
+    def test_indexed_array_recovery_preserves_explicit_numeric_order(self):
+        schema=copy.deepcopy(SCHEMA)
+        schema['properties']['result']={'type':'object','properties':{'limitations':{'type':'array','items':{'type':'string'}}},'required':['limitations'],'additionalProperties':False}
+        response=copy.deepcopy(RESPONSE);response['result']={'limitations':{'1':'Second.','0':'First.'}}
+        result,audit=assess(events_for([response]),0,schema,MODEL)
+        self.assertTrue(audit['valid']);self.assertFalse(audit['native_schema_valid'])
+        self.assertEqual(result['structured_output']['result']['limitations'],['First.','Second.'])
+        for value in ({'1':'a'}, {'0':'a','2':'b'}, {'00':'a'}, {}, {'0':'a','meta':'b'}):
+            response['result']['limitations']=value
+            _,audit=assess(events_for([response]),0,schema,MODEL)
+            self.assertFalse(audit['valid'])
+
     def test_cli_input_preserves_complete_request_and_shares_pack_prefix(self):
         request = {'job': 'first', 'model': MODEL, 'payload': {'question': 'First question?', 'pack': 'A stable Japanese context: 条件。' * 1000},
                    'prompt': 'Answer using the Pack.', 'request_id': 'a' * 64, 'response_schema': SCHEMA,
@@ -91,12 +148,14 @@ class ClaudeAuditTests(unittest.TestCase):
             with self.subTest(corruption=corruption):
                 self.assertFalse(assess(events, 0, SCHEMA, MODEL)[1]['valid'])
 
-    def test_cli_schema_compatibility_removes_only_declaration(self):
+    def test_cli_schema_projection_preserves_envelope_and_declared_fields(self):
         schema = copy.deepcopy(SCHEMA)
         argv = cli_arguments(Path('/synthetic/claude'), {'model': MODEL, 'response_schema': schema},
                              effort='medium', call_budget=5)
         sent = json.loads(argv[argv.index('--json-schema') + 1])
-        self.assertEqual(sent, {k: v for k, v in SCHEMA.items() if k != '$schema'})
+        expected = {k: copy.deepcopy(v) for k, v in SCHEMA.items() if k != '$schema'}
+        expected['properties']['result'] = {'type': 'object', 'additionalProperties': True}
+        self.assertEqual(sent, expected)
         self.assertEqual(schema, SCHEMA)
         self.assertEqual(argv[argv.index('--tools') + 1], '')
 
@@ -216,3 +275,78 @@ class SalvageTests(unittest.TestCase):
         clean = copy.deepcopy(RESPONSE)
         _, audit = assess(self.rejected_events(clean), 1, SCHEMA, MODEL)
         self.assertFalse(audit['valid'])  # nothing to prune: the rejection stands
+
+
+class ResultTransportTests(unittest.TestCase):
+    def test_native_transport_is_open_but_controller_schema_stays_closed(self):
+        from reading_pack_producer.delivery_fresh import full_schema
+        from reading_pack_producer.delivery_contract import obj
+        schema = obj({'result': full_schema({'id': 'CH-01', 'sections': [{'id': 'S01-01'}]})})
+        before = copy.deepcopy(schema)
+        args = cli_arguments(Path('/bin/false'), {'model': MODEL, 'stage': 'generate', 'response_schema': schema}, effort='low', call_budget=1)
+        native = json.loads(args[args.index('--json-schema')+1])
+        self.assertFalse(native['additionalProperties'])
+        self.assertEqual(native['properties']['result'], {'type': 'object', 'additionalProperties': True})
+        self.assertEqual(json.loads(cli_input({'model': MODEL, 'response_schema': schema}))['response_schema'], before)
+        self.assertEqual(schema, before)
+
+    def test_evaluation_transport_is_open_with_original_constraints_preserved(self):
+        before = copy.deepcopy(SCHEMA)
+        args = cli_arguments(Path('/bin/false'), {'model': MODEL, 'stage': 'source_support', 'response_schema': SCHEMA}, effort='low', call_budget=1)
+        native = json.loads(args[args.index('--json-schema')+1])
+        self.assertFalse(native['additionalProperties'])
+        self.assertTrue(native['properties']['result']['additionalProperties'])
+        self.assertEqual(native['properties']['result']['type'], 'object')
+        self.assertEqual(json.loads(cli_input({'model': MODEL, 'response_schema': SCHEMA}))['response_schema'], before)
+        self.assertEqual(SCHEMA, before)
+
+    def test_extra_keys_pruned_but_invalid_declared_values_rejected(self):
+        noisy = copy.deepcopy(RESPONSE);noisy['result']['decoder_dummy'] = ''
+        parsed, audit = assess(events_for([noisy]), 0, SCHEMA, MODEL)
+        self.assertTrue(audit['valid'], audit)
+        self.assertEqual(parsed['structured_output'], RESPONSE)
+        self.assertEqual(audit['salvaged_additional_properties'], ['/result/decoder_dummy'])
+        noisy['result']['valid'] = 'wrong type'
+        self.assertFalse(assess(events_for([noisy]), 0, SCHEMA, MODEL)[1]['valid'])
+
+
+class StoppedOutputTests(unittest.TestCase):
+    def stopped(self, response=RESPONSE):
+        events=events_for([copy.deepcopy(response)])
+        events[-1].update(subtype='error_max_budget_usd',is_error=True)
+        events[-1].pop('structured_output');events[-1].pop('result')
+        del events[1]  # CLI stops before the tool result is acknowledged.
+        return events
+
+    def test_budget_stop_recovers_exact_complete_output_without_call_success(self):
+        result,audit=assess(self.stopped(),1,SCHEMA,MODEL)
+        self.assertTrue(audit['valid'],audit)
+        self.assertEqual(result['structured_output'],RESPONSE)
+        self.assertFalse(audit['native_execution_completed'])
+        self.assertTrue(result['is_error'])
+        self.assertFalse(audit['recovery']['content_changed'])
+        self.assertEqual(audit['total_cost_usd'],.25)
+
+    def test_timeout_complete_output_recovers_but_cost_remains_unknown(self):
+        result,audit=assess(self.stopped()[:-1],-9,SCHEMA,MODEL,interrupted=True)
+        self.assertTrue(audit['valid'],audit)
+        self.assertIsNone(audit['total_cost_usd'])
+        self.assertEqual(result['structured_output'],RESPONSE)
+        self.assertFalse(assess(self.stopped()[:-1],-9,SCHEMA,MODEL)[1]['valid'])
+
+    def test_recovery_refuses_invalid_ambiguous_foreign_or_rejected_output(self):
+        for kind in ('malformed','extra','two','model','wrong_request','denied','tool','rejected','duplicate_result'):
+            with self.subTest(kind=kind):
+                events=self.stopped();schema=copy.deepcopy(SCHEMA)
+                schema['properties']['request_id']={'const':RESPONSE['request_id']}
+                call=events[0]['message']['content'][0]
+                if kind=='malformed':call['input']['result']='{"valid":true'
+                elif kind=='extra':call['input']['result']['extra']='x'
+                elif kind=='two':events.insert(1,copy.deepcopy(events[0]))
+                elif kind=='model':events[-1]['modelUsage'][MODEL]['canonicalModel']='other'
+                elif kind=='wrong_request':call['input']['request_id']='b'*64
+                elif kind=='denied':events[-1]['permission_denials']=['denied']
+                elif kind=='tool':call['name']='Bash'
+                elif kind=='duplicate_result':events.append(copy.deepcopy(events[-1]))
+                else:events.insert(1,{'type':'user','message':{'content':[{'type':'tool_result','tool_use_id':'output-0','is_error':True}]}})
+                self.assertFalse(assess(events,1,schema,MODEL)[1]['valid'])

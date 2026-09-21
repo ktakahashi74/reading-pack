@@ -50,6 +50,12 @@ def adapter_receipt(command: list[str], request_id: str) -> dict | None:
                'receipt_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
                'receipt_valid': audit.get('valid', False), 'usage_origin': 'claude-cli',
                'elapsed_seconds': audit.get('elapsed_seconds')}
+    if audit.get('recovery'):
+        receipt['recovery'] = audit['recovery']
+        receipt['native_execution_completed'] = False
+    if audit.get('normalized_array_wrappers'):
+        receipt['normalized_array_wrappers'] = list(audit['normalized_array_wrappers'])
+        receipt['native_schema_valid'] = False
     if audit.get('salvaged_additional_properties'):
         receipt['salvaged_additional_properties'] = list(audit['salvaged_additional_properties'])
     return receipt

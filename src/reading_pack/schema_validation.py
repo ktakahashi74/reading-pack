@@ -32,6 +32,7 @@ SCHEMA_NAMES = frozenset(
         "pipeline-recipe.schema.json",
         "pipeline-worker.schema.json",
         "delivery-recipe.schema.json",
+        "delivery-mechanical.schema.json",
         "author-input-manifest.schema.json",
         "author-input-module.schema.json",
         "author-input-plan.schema.json",
