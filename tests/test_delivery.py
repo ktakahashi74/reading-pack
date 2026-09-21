@@ -101,7 +101,7 @@ class DeliveryTests(unittest.TestCase):
             core_index_root = build.directory / CORE_INDEX_PROFILE / build.language
             artifacts = {
                 name: (core_index_root / f"{name}.md").read_bytes()
-                for name in ("core", "mis", "names", "gloss")
+                for name in ("core", "props", "mis", "names", "gloss")
             }
             for name, content in artifacts.items():
                 self.assertEqual((core_index_root / f"{name}.txt").read_bytes(), content)
@@ -138,7 +138,7 @@ class DeliveryTests(unittest.TestCase):
             )
             structure = parse_pack(canonical.decode("utf-8"))
             core = artifacts["core"]
-            for module in ("MIS", "NAMES", "GLOSS"):
+            for module in ("PROPS", "MIS", "NAMES", "GLOSS"):
                 self.assertNotIn(structure.sections[module].text.encode("utf-8"), core)
                 self.assertIn(
                     structure.sections[module].text.encode("utf-8"),
@@ -147,11 +147,12 @@ class DeliveryTests(unittest.TestCase):
             core_index_prompt = (core_index_root / "entry-prompt.txt").read_text(
                 encoding="utf-8"
             )
-            for name in ("core", "mis", "names", "gloss"):
+            for name in ("core", "props", "mis", "names", "gloss"):
                 self.assertIn(
                     f"/{CORE_INDEX_PROFILE}/{build.language}/{name}.txt",
                     core_index_prompt,
                 )
+            self.assertIn(b"| deferred=PROPS,MIS,NAMES,GLOSS\n", core)
             self.assertIn("ENDPACKCORE", core_index_prompt)
             self.assertIn("ENDPACKSHARD", core_index_prompt)
             self.assertIn(structure.sections["SYS"].text.encode("utf-8"), lazy.encode("utf-8"))
@@ -242,7 +243,7 @@ class DeliveryTests(unittest.TestCase):
             self.data["en"],
         )
         output_path(self.project, self.config, "en").write_text(rendered, encoding="utf-8")
-        with self.assertRaisesRegex(ReadingPackError, "web-core-index-v2 gloss.*maximum"):
+        with self.assertRaisesRegex(ReadingPackError, "web-core-index-v3 gloss.*maximum"):
             build_delivery(
                 self.project,
                 ["en"],
@@ -261,7 +262,7 @@ class DeliveryTests(unittest.TestCase):
             self.data["en"],
         )
         output_path(self.project, self.config, "en").write_text(rendered, encoding="utf-8")
-        with self.assertRaisesRegex(ReadingPackError, "web-core-index-v2 names.*characters"):
+        with self.assertRaisesRegex(ReadingPackError, "web-core-index-v3 names.*characters"):
             build_delivery(
                 self.project,
                 ["en"],

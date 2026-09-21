@@ -5,6 +5,7 @@
 - 状態: Fable最終review採用可。参照実装完了。run-008 ChatGPT Chat日本語実機合格。production採用
 - profile: `web-core-index-v2`
 - 前版: [web-core-index-v1](reading-pack-web-core-index-design.ja.md)
+- 後継: [web-core-index-v3](reading-pack-web-core-index-v3-design.ja.md)（`PROPS`も遅延モジュールへ移す。参照実装はv3へ置き換わった）
 
 正準`pack.md`、Pack SHA-256、一ファイル性、保存済みfileのsite非依存性、完全Pack添付fallbackは変更しない。サイトの「ChatGPTで開く」も一回操作のまま維持する。
 

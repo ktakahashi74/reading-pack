@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from reading_pack.delivery import (
+    CORE_INDEX_SHARD_KINDS,
     build_delivery,
     check_delivery,
     delivery_measurement,
@@ -514,13 +515,13 @@ def command_delivery_measure(args: argparse.Namespace) -> int:
             core_index = row["core_index"]
             warnings = ",".join(
                 name
-                for name in ("core", "mis", "names", "gloss")
+                for name in ("core", *CORE_INDEX_SHARD_KINDS)
                 if core_index[f"{name}_warning"]
             ) or "none"
             artifacts = " ".join(
                 f"{name}={core_index[f'{name}_utf8_bytes']}B/"
                 f"{core_index[f'{name}_characters']}ch"
-                for name in ("core", "mis", "names", "gloss")
+                for name in ("core", *CORE_INDEX_SHARD_KINDS)
             )
             print(
                 f"{row['language']}: {row['characters']} chars; {row['utf8_bytes']} bytes; "

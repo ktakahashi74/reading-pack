@@ -4,7 +4,9 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- Replace the one-touch `web-core-index-v2` delivery profile with `web-core-index-v3`, which defers `PROPS` alongside `MIS`, `NAMES`, and `GLOSS`. A Pack with 95 claims pushed the English v2 core to 81,333 characters, past the 80,000-character budget; v3 brings that core to about 30,000 characters without relaxing the budget. Deferred modules are now derived from one constant, so artifact rendering, the entry prompt, manifest, verification, and `delivery measure` stay in step. Published v2 bundles are unaffected. Sites with stable retrieval URLs must add a `props.txt` route. Production adoption still requires the same on-device ChatGPT test as v2 ([design](docs/reading-pack-web-core-index-v3-design.ja.md)).
 
 ## [0.7.0] — 2026-09-13
 
