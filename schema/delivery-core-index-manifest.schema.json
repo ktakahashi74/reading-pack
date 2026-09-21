@@ -11,6 +11,7 @@
     "budget",
     "entry_prompt",
     "core",
+    "props",
     "mis",
     "names",
     "gloss",
@@ -40,8 +41,8 @@
         "warning"
       ],
       "properties": {
-        "source": { "enum": ["core.md", "mis.md", "names.md", "gloss.md"] },
-        "alias": { "enum": ["core.txt", "mis.txt", "names.txt", "gloss.txt"] },
+        "source": { "enum": ["core.md", "props.md", "mis.md", "names.md", "gloss.md"] },
+        "alias": { "enum": ["core.txt", "props.txt", "mis.txt", "names.txt", "gloss.txt"] },
         "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
         "sha256": { "$ref": "#/$defs/sha256" },
         "bytes": {
@@ -97,7 +98,7 @@
             "ENDPACK"
           ]
         },
-        "artifact": { "enum": ["core.md", "mis.md", "names.md", "gloss.md"] },
+        "artifact": { "enum": ["core.md", "props.md", "mis.md", "names.md", "gloss.md"] },
         "block": { "type": "string", "pattern": "^CANONICAL_[A-Z]+$" },
         "payload_offset": { "type": "integer", "minimum": 1 },
         "payload_bytes": { "$ref": "#/$defs/positiveBytes" },
@@ -108,7 +109,7 @@
   },
   "properties": {
     "schema_version": { "const": 1 },
-    "profile": { "const": "web-core-index-v2" },
+    "profile": { "const": "web-core-index-v3" },
     "pack": {
       "type": "object",
       "additionalProperties": false,
@@ -148,6 +149,7 @@
       }
     },
     "core": { "$ref": "#/$defs/artifact" },
+    "props": { "$ref": "#/$defs/artifact" },
     "mis": { "$ref": "#/$defs/artifact" },
     "names": { "$ref": "#/$defs/artifact" },
     "gloss": { "$ref": "#/$defs/artifact" },

@@ -138,7 +138,7 @@ reading-pack agent-skill check --project examples/clockwork-garden --release
 
 ### 任意の搬送adapter
 
-完全なMarkdown一ファイルが、主要かつportableな成果物です。このファイルが`check`に合格した後、搬送経路別のcopy、実験的Web lazy bundle、初回一URLを維持する`web-core-index-v2`のcoreと質問時取得の遅延モジュールを、別directoryへ生成できます。
+完全なMarkdown一ファイルが、主要かつportableな成果物です。このファイルが`check`に合格した後、搬送経路別のcopy、実験的Web lazy bundle、初回一URLを維持する`web-core-index-v3`のcoreと質問時取得の遅延モジュールを、別directoryへ生成できます。
 
 ```sh
 reading-pack delivery measure --project examples/clockwork-garden --lang all --json

@@ -138,7 +138,7 @@ These commands confirm that the English and Japanese Packs, optional Agent Skill
 
 ### Optional delivery adapters
 
-The complete Markdown file remains the primary, portable artifact. After that file passes `check`, producers may build transport-specific copies, an experimental Web-lazy bundle, and `web-core-index-v2` one-touch core plus question-routed lazy modules in a separate directory:
+The complete Markdown file remains the primary, portable artifact. After that file passes `check`, producers may build transport-specific copies, an experimental Web-lazy bundle, and `web-core-index-v3` one-touch core plus question-routed lazy modules in a separate directory:
 
 ```sh
 reading-pack delivery measure --project examples/clockwork-garden --lang all --json
