@@ -49,6 +49,39 @@ class RenderingTests(unittest.TestCase):
             ).encode("utf-8")
             self.assertEqual(hashlib.sha256(rendered).hexdigest(), digest)
 
+    def test_offset_locations_render_as_sections_and_pages(self):
+        data = json.loads(json.dumps(self.data["ja"]))
+        chapter = data["chapters"][0]
+        chapter["source_locations"] = ["source.txt#normalized-text:0-200"]
+        data["section_pages"] = [
+            {"chapter_id": chapter["id"], "section_id": "S01-01", "title": "「入口」の節", "printed_page": 12},
+            {"chapter_id": chapter["id"], "section_id": "S01-02", "title": "次の節", "printed_page": 20},
+        ]
+        overview = {"layer": "descriptive", "kind": "section_overview", "chapter_ids": [chapter["id"]],
+                    "statement": "節の要点。", "status": "draft"}
+        data["claims"] += [
+            {**overview, "id": "CP-S01-01", "source_locations": ["source.txt#normalized-text:0-100"]},
+            {**overview, "id": "CP-S01-02", "source_locations": ["source.txt#normalized-text:100-200"]},
+        ]
+        data["names"][0]["source_locations"] = ["source.txt#normalized-text:120-130", "appendix.md#note"]
+        before = json.dumps(data, ensure_ascii=False, sort_keys=True)
+
+        rendered = render_pack(self.project, "ja", self.config, data)
+
+        # The data keeps its offsets; only the rendered text changes.
+        self.assertEqual(json.dumps(data, ensure_ascii=False, sort_keys=True), before)
+        self.assertNotIn("normalized-text", rendered)
+        title = chapter["title"]
+        self.assertIn(f"loc: {title}（p.12〜）", rendered)
+        self.assertIn(f"loc: {title}／「入口」の節（節開始p.12）", rendered)
+        self.assertIn(f"loc: {title}／次の節（節開始p.20）; appendix.md#note", rendered)
+
+    def test_offsets_without_section_pages_render_unchanged(self):
+        data = json.loads(json.dumps(self.data["ja"]))
+        data["names"][0]["source_locations"] = ["source.txt#normalized-text:120-130"]
+        rendered = render_pack(self.project, "ja", self.config, data)
+        self.assertIn("loc: source.txt#normalized-text:120-130", rendered)
+
     def test_pack_contains_required_markers(self):
         pack = render_pack(self.project, "en", self.config, self.data["en"])
         self.assertTrue(pack.startswith("PACK |"))

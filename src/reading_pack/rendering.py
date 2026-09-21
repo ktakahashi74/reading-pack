@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import copy
+import re
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +66,77 @@ PROFILE_RULES = {
         "reference-routing": "P1: Act as an index and locator; do not generate unrecorded definitions or entry text.",
     },
 }
+
+
+_NORMALIZED_SPAN = re.compile(r"^[^#]+#normalized-text:(\d+)-(\d+)$")
+_LOCATED_COLLECTIONS = (
+    "chapters", "certainty", "claims", "misreadings", "policies", "names", "glossary", "references",
+)
+
+
+def _with_reader_locations(data: dict[str, Any], lang: str) -> dict[str, Any]:
+    """Show sections and start pages instead of offsets into the extracted text.
+
+    A generated Pack locates every record as ``source.txt#normalized-text:a-b``.
+    Those offsets verify evidence against the source, but a reader cannot look
+    them up, and an assistant repeats them as if they were places in the book.
+    When the Pack records section start pages, each section overview claim
+    (``CP-<section_id>``) spans its section, so an offset range resolves to the
+    sections it overlaps. Only the rendered text changes: the data keeps the
+    offsets. Packs without section pages render exactly as before.
+    """
+    pages = {entry["section_id"]: entry for entry in data.get("section_pages", [])}
+    spans = []
+    for claim in data.get("claims", []):
+        entry = pages.get(str(claim.get("id", ""))[3:]) if claim.get("kind") == "section_overview" else None
+        match = _NORMALIZED_SPAN.match((claim.get("source_locations") or [""])[0])
+        if entry and match:
+            spans.append((int(match.group(1)), int(match.group(2)), entry))
+    if not spans:
+        return data
+    spans.sort(key=lambda span: span[0])
+    titles = {chapter["id"]: chapter["title"] for chapter in data.get("chapters", [])}
+    per_chapter: dict[str, int] = {}
+    for _, _, entry in spans:
+        per_chapter[entry["chapter_id"]] = per_chapter.get(entry["chapter_id"], 0) + 1
+
+    def describe(location: str) -> list[str]:
+        match = _NORMALIZED_SPAN.match(location)
+        if not match:
+            return [location]
+        start, end = int(match.group(1)), int(match.group(2))
+        hits = [entry for a, b, entry in spans if a < end and start < b]
+        if not hits:
+            return [location]
+        out = []
+        for chapter_id in dict.fromkeys(entry["chapter_id"] for entry in hits):
+            chapter = titles.get(chapter_id, chapter_id)
+            sections = [entry for entry in hits if entry["chapter_id"] == chapter_id]
+            # A range covering a whole chapter, or many sections, reads better as the chapter.
+            if len(sections) == per_chapter[chapter_id] or len(sections) > 3:
+                first = sections[0]["printed_page"]
+                out.append(f"{chapter}（p.{first}〜）" if lang == "ja" else f"{chapter} (from p. {first})")
+                continue
+            for entry in sections:
+                # Section titles often carry their own quotation marks, so join with a separator.
+                out.append(
+                    f"{chapter}／{entry['title']}（節開始p.{entry['printed_page']}）" if lang == "ja"
+                    else f"{chapter} / {entry['title']} (section starts p. {entry['printed_page']})"
+                )
+        return out
+
+    rendered = copy.copy(data)
+    for collection in _LOCATED_COLLECTIONS:
+        records = []
+        for record in data.get(collection, []):
+            if record.get("source_locations"):
+                record = {**record, "source_locations": list(dict.fromkeys(
+                    text for location in record["source_locations"] for text in describe(location)
+                ))}
+            records.append(record)
+        if collection in data:
+            rendered[collection] = records
+    return rendered
 
 
 def _location_rule(lang: str, data: dict[str, Any]) -> str:
@@ -622,6 +695,7 @@ def _meta(
 
 
 def render_pack(project: Path, lang: str, config: dict[str, Any], data: dict[str, Any]) -> str:
+    data = _with_reader_locations(data, lang)
     template_path = project / "templates" / f"pack.{lang}.md"
     try:
         template = template_path.read_text(encoding="utf-8")
