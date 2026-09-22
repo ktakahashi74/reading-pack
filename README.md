@@ -6,7 +6,7 @@ Reading Pack is an open-source toolkit for creating compact guides that help rea
 
 A Reading Pack points the reader back to the original book. It is not a reproduction or compressed substitute. The toolkit builds it reproducibly from structured data reviewed by an author or editor, then detects manual changes, stale translations, and missing publication approvals.
 
-> **Status:** The toolkit is v0.7.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
+> **Status:** The toolkit is v0.8.0 (alpha). The Format Specification and Production Standard are `1.0-draft`; the Production Standard is currently designated beta. Python 3.11–3.14 is tested. Incompatible changes remain possible during the draft period.
 
 ## Automatic production
 
@@ -36,7 +36,7 @@ Reading Pack separates three concerns. The first is the Markdown artifact delive
 
 - [Reading Pack Format Specification 1.0-draft](spec/reading-pack-format-spec.en.md) defines the structure and meaning of the single Markdown artifact.
 - [Reading Pack Production Standard 1.0-draft (beta)](spec/reading-pack-production-standard.en.md) defines Levels 1–3, W0–W13, evidence, author review, evaluation, and publication gates.
-- [reading-pack Reference Implementation Profile 0.7.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
+- [reading-pack Reference Implementation Profile 0.8.0 (alpha)](spec/reading-pack-reference-implementation.en.md) documents this toolkit's project layout, CLI, import, transaction, and plugin boundaries.
 
 Koichi Takahashi authored the Format Specification and Production Standard in 2026 and publishes them under CC BY 4.0. They may be modified, independently implemented, and used in commercial Reading Pack production services. The [standards-suite overview](spec/reading-pack-spec.en.md) explains the relationship among the three documents and gives suggested citations.
 

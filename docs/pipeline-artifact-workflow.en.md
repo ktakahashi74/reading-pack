@@ -2,7 +2,7 @@
 
 For new generation with evaluation delivery, use [Pack delivery and quality reporting](pipeline-delivery.en.md). Scores do not decide adoption or trigger repairs. The older acceptance/approval workflows on this page remain separate.
 
-`artifact-acceptance-1` now runs generation, direct inspection, at most one repair round, full reinspection and a local author packet. The default contract remains `legacy-reader-evaluation-1`. Existing runs keep their original contract, source files, decisions and budgets. This implementation is v0.7.0 alpha, unreleased.
+`artifact-acceptance-1` now runs generation, direct inspection, at most one repair round, full reinspection and a local author packet. The default contract remains `legacy-reader-evaluation-1`. Existing runs keep their original contract, source files, decisions and budgets. This implementation is v0.8.0 alpha.
 
 | Milestone | Implemented boundary |
 |---|---|

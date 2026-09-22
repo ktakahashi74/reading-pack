@@ -1,6 +1,6 @@
-PROFILE | name=reading-pack Reference Implementation Profile | version=0.7.0 | status=alpha | language=ja | primary=true | date=2026-09-10 | author=高橋恒一 | code_license=MIT | document_license=CC BY 4.0
+PROFILE | name=reading-pack Reference Implementation Profile | version=0.8.0 | status=alpha | language=ja | primary=true | date=2026-09-22 | author=高橋恒一 | code_license=MIT | document_license=CC BY 4.0
 
-# reading-pack参照実装プロファイル 0.7.0（alpha）
+# reading-pack参照実装プロファイル 0.8.0（alpha）
 
 この文書は、当リポジトリにあるPython実装の公開契約を説明する。Reading Packの形式適合または制作適合を他の実装が宣言するための条件ではない。日本語版を正本とする。
 
@@ -56,7 +56,7 @@ PROFILE | name=reading-pack Reference Implementation Profile | version=0.7.0 | s
 
 **RPI-019** 公開testは通信せず、架空資料だけを使い、Schema、診断互換、byte再現性、日英対応、transaction rollback、path境界、長文複製防止を検査する。実機model評価はCIの必須条件にしない。
 
-**RPI-020** このプロファイルへの準拠は`Built with reading-pack toolkit 0.7.0`という生成器表示で示してよい。これは形式適合または制作適合の宣言を代替しない。
+**RPI-020** このプロファイルへの準拠は`Built with reading-pack toolkit 0.8.0`という生成器表示で示してよい。これは形式適合または制作適合の宣言を代替しない。
 
 **RPI-021** Delivery Adapterは完成した正準Packから決定的に生成する任意の派生物であり、正本、形式適合条件、承認単位ではない。`delivery check`は正準Packの鮮度、aliasのbyte一致、manifest、marker、版と言語、上限、全componentのexact再構築を検査する。上限超過時は切り詰めず失敗し、command自体は公開を行わない。
 
