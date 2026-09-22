@@ -6,7 +6,7 @@ Reading Packは、書籍をAIと読むための短い案内ファイルを作る
 
 読解パックの役割は、読者を原著へ戻すことにあります。書籍本文の複製や圧縮版は作りません。著者や編集者が確認した構造化データから毎回同じファイルを生成し、生成物の手編集、古くなった翻訳、公開承認の不足を検出します。
 
-> **開発状況：** ツールはv0.7.0（alpha）です。形式仕様と制作標準は`1.0-draft`で、制作標準はbetaとして運用しています。Python 3.11–3.14で検査しています。草案期間中は互換性のない変更が入る可能性があります。
+> **開発状況：** ツールはv0.8.0（alpha）です。形式仕様と制作標準は`1.0-draft`で、制作標準はbetaとして運用しています。Python 3.11–3.14で検査しています。草案期間中は互換性のない変更が入る可能性があります。
 
 ## 自動で作成する
 
@@ -36,7 +36,7 @@ Reading Packの公開規範は三層に分かれています。第一が完成�
 
 - [Reading Pack形式仕様 1.0-draft](spec/reading-pack-format-spec.ja.md)：読者へ渡す単一Markdownの構造と意味を定めます。
 - [Reading Pack制作標準 1.0-draft（beta）](spec/reading-pack-production-standard.ja.md)：Level 1〜3、W0〜W13、根拠、著者レビュー、評価、公開条件を定めます。
-- [reading-pack参照実装プロファイル 0.7.0（alpha）](spec/reading-pack-reference-implementation.ja.md)：このツール固有のプロジェクト構成、CLI、取り込み、トランザクション、プラグイン境界を説明します。
+- [reading-pack参照実装プロファイル 0.8.0（alpha）](spec/reading-pack-reference-implementation.ja.md)：このツール固有のプロジェクト構成、CLI、取り込み、トランザクション、プラグイン境界を説明します。
 
 形式仕様と制作標準は、高橋恒一が2026年に策定し、CC BY 4.0で公開しています。改変、独自実装、商用の読解パック制作サービスに利用できます。三層の関係と推奨引用は[Reading Pack標準群](spec/reading-pack-spec.ja.md)にまとめました。
 

@@ -8,7 +8,7 @@ This guide describes `legacy-reader-evaluation-1`. For the current direct-inspec
 
 Fresh runs freeze a reader-utility contract before questions or answers. Generated questions no longer create mandatory Pack content. Central meanings, material qualifications and correct attribution remain essential; incidental numbers may be handled by an honest limitation and a specific relevant location already present in the Pack. Generic deflection and false statements still fail. Existing studies retain their original scope and results on restart; changing scope requires a separately identified reassessment, without implying that the candidate must be regenerated.
 
-A workflow is ready for routine use only when it has repeatedly delivered useful, source-faithful Packs within a declared time and cost allowance. Merely stopping after a timeout is not successful production. Version 0.7.0 remains an unqualified alpha: the repository contains control tests, not a measured certificate for real books.
+A workflow is ready for routine use only when it has repeatedly delivered useful, source-faithful Packs within a declared time and cost allowance. Merely stopping after a timeout is not successful production. Version 0.8.0 remains an unqualified alpha: the repository contains control tests, not a measured certificate for real books.
 
 ## One operating contract per run
 

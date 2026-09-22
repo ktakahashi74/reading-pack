@@ -8,12 +8,12 @@
     {
       "bytes": 7278,
       "path": "references/clockwork-garden-reading-pack.en.md",
-      "sha256": "41766b60014deb4368a9b8c864a58a751e2ab7161c52ece260f2bce94cc4a31d"
+      "sha256": "357b2bb1835011093c4cbfe6b04b4a62c08bb341fddedfd48792573512ca50ad"
     },
     {
       "bytes": 7958,
       "path": "references/clockwork-garden-reading-pack.ja.md",
-      "sha256": "f5298634331802d350953021c2740b71c1a4b2545af12d91509c71f3db7ca9b9"
+      "sha256": "7ba10e662d300ce6f9af2808cab834e55cccca1ea8554129fe74bc1306ad5723"
     }
   ],
   "format_version": "1",

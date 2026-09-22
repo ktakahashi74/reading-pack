@@ -4,6 +4,12 @@ All notable changes are recorded here. The format follows Keep a Changelog; vers
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.8.0] — 2026-09-22
+
+### Fixed and added
+
 - Add an explicitly enabled single repair round for fresh deliveries: source- and finding-bound patches, per-finding dispositions, preserved first-pass artifacts, and new evaluations for changed chapters and the final Pack. Reserve both passes before sending; never reuse initial scores for changed content or auto-adopt by score.
 
 
